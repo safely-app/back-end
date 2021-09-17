@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
 
-import {MarketingTargetController} from "./controller/";
+import {CampaignController, MarketingTargetController} from "./controller/";
 import { config } from "./store/config";
 
 const app = express();
@@ -12,7 +12,8 @@ app.use(cors());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
-app.use("/", MarketingTargetController);
+app.use("/target", MarketingTargetController);
+app.use("/campaign", CampaignController);
 
 let envConfig;
 

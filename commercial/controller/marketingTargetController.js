@@ -1,6 +1,6 @@
 import express from 'express';
 import _ from "lodash";
-import { MarketingTarget } from '../database/models/';
+import { MarketingTarget } from '../database/models';
 import { validateMarketingTarget } from '../store/validation';
 import { marketingTargetUserCheck } from '../store/middleware';
 
