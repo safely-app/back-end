@@ -2,6 +2,7 @@ import express from 'express';
 import _ from "lodash";
 import { MarketingTarget } from '../database/models/';
 import { validateMarketingTarget } from '../store/validation';
+import { marketingTargetUserCheck } from '../store/middleware';
 
 export const MarketingTargetController = express.Router();
 
@@ -20,7 +21,7 @@ MarketingTargetController.get('/', async (req, res) => {
     });
 });
 
-MarketingTargetController.put('/:id', async (req, res, next) => {
+MarketingTargetController.put('/:id', marketingTargetUserCheck, async (req, res, next) => {
     const newBody = req.body;
 
     if (newBody._id)
@@ -46,7 +47,7 @@ MarketingTargetController.post('/', async (req, res) => {
     res.status(201).send(marketingTarget);
 });
 
-MarketingTargetController.delete('/:id', async (req, res) => {
+MarketingTargetController.delete('/:id', marketingTargetUserCheck, async (req, res) => {
     MarketingTarget.deleteOne({_id: req.params.id})
       .then(()=> {
         res.status(200).json({ message: 'Marketing target deleted !' });
