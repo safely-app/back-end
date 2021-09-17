@@ -1,0 +1,21 @@
+{
+  "name": "extern.service",
+  "version": "1.0.0",
+  "description": "get ans stock information from an external service",
+  "main": "app.js",
+  "scripts": {
+    "start": "NODE_ENV=production node -r esm app.js -p 8080",
+    "dev": "NODE_ENV=dev nodemon -r esm app.js -p 8080"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "joi": "^17.4.2",
+    "mongoose": "^5.12.12",
+    "node-fetch": "^2.6.1",
+    "nodemon": "^2.0.7",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {}
+}
