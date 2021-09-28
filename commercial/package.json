@@ -1,7 +1,7 @@
 {
-  "name": "extern.service",
+  "name": "commercial-service",
   "version": "1.0.0",
-  "description": "get ans stock information from an external service",
+  "description": "Service who handle the cycle of life of a campains and billing.",
   "main": "app.js",
   "scripts": {
     "start": "NODE_ENV=production node -r esm app.js -p 8080",

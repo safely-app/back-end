@@ -1,11 +1,13 @@
 import express from 'express';
 import _ from "lodash";
 import { Campaign } from '../database/models';
-import { validateCampaign } from '../store/validation';
+import { CampaignUserCheck } from '../store/middleware';
+import { validateCampaign, putValidateCampaign } from '../store/validation';
+import { needToBeAdmin } from '../store/middleware';
 
 export const CampaignController = express.Router();
 
-CampaignController.get('/', async (req, res) => {
+CampaignController.get('/', needToBeAdmin , async (req, res) => {
     Campaign.find({}, function(err, targets) {
         let campaignsMap = [];
 
@@ -20,7 +22,7 @@ CampaignController.get('/', async (req, res) => {
     });
 });
 
-CampaignController.get('/:id', async (req, res) => {
+CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
 
     if (campaign) {
@@ -32,7 +34,11 @@ CampaignController.get('/:id', async (req, res) => {
         res.status(404).json({error: "Campaign not found"});
 });
 
-CampaignController.put('/:id', async (req, res, next) => {
+CampaignController.put('/:id', CampaignUserCheck, async (req, res, next) => {
+    const { error } = putValidateCampaign(req.body);
+
+    if (error)
+      return res.status(400).json({ error: error.details[0].message});
     const newBody = req.body;
 
     if (newBody._id)
@@ -68,7 +74,7 @@ CampaignController.post('/', async (req, res) => {
     res.status(201).send(campaign);
 });
 
-CampaignController.delete('/:id', async (req, res) => {
+CampaignController.delete('/:id', CampaignUserCheck, async (req, res) => {
     Campaign.deleteOne({_id: req.params.id})
       .then(()=> {
         res.status(200).json({ message: 'Campaign deleted !' });
