@@ -1,9 +1,8 @@
 import express from 'express';
 import _ from "lodash";
 import { Campaign } from '../database/models';
-import { CampaignUserCheck } from '../store/middleware';
+import { CampaignUserCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
-import { needToBeAdmin } from '../store/middleware';
 
 export const CampaignController = express.Router();
 
@@ -51,7 +50,7 @@ CampaignController.put('/:id', CampaignUserCheck, async (req, res, next) => {
     })
 });
 
-CampaignController.copy('/:id', async (req, res) => {
+CampaignController.copy('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
     let new_campaign = new Campaign(_.pick(campaign,
         ['ownerId','name','budget', 'status', 'startingDate']));
@@ -62,7 +61,7 @@ CampaignController.copy('/:id', async (req, res) => {
     return res.status(200).json({success: 'Duplicated!'})
 });
 
-CampaignController.post('/', async (req, res) => {
+CampaignController.post('/', needToBeLogin, async (req, res) => {
     const { error } = validateCampaign(req.body);
 
     if (error)

@@ -2,8 +2,7 @@ import express from 'express';
 import _ from "lodash";
 import { MarketingTarget } from '../database/models';
 import { validateMarketingTarget, putValidateMarketingTarget } from '../store/validation';
-import { needToBeAdmin } from '../store/middleware';
-import { marketingTargetUserCheck } from '../store/middleware';
+import { needToBeAdmin, marketingTargetUserCheck, needToBeLogin } from '../store/middleware';
 
 export const MarketingTargetController = express.Router();
 
@@ -39,7 +38,7 @@ MarketingTargetController.put('/:id', marketingTargetUserCheck, async (req, res,
     })
 });
 
-MarketingTargetController.post('/', async (req, res) => {
+MarketingTargetController.post('/', needToBeLogin, async (req, res) => {
     const { error } = validateMarketingTarget(req.body);
 
     if (error)

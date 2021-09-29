@@ -13,6 +13,15 @@ async function ownerOrAdmin(ownerId, jwt)
     return await requester.send(request);
 }
 
+export async function needToBeLogin(req, res, next) {
+    const request = { type: 'owner or admin', ownerId: "", jwt: req.headers.authorization};
+    const response = await requester.send(request);
+    console.log(request, response)
+    if (response.role === "empty")
+        return res.status(500).json({ error: "You need to be login"});
+    next();
+}
+
 export async function needToBeAdmin(req, res, next) {
     const request = { type: 'owner or admin', ownerId: "", jwt: req.headers.authorization};
     const response = await requester.send(request);
