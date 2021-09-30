@@ -2,7 +2,7 @@ import express from 'express';
 import logger from 'winston';
 import cors from 'cors';
 
-import {ExampleController} from "./controller";
+import { userAlgoController } from "./controller";
 import { config } from "./store/config";
 
 const app = express();
@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
-app.use("/example", ExampleController);
+app.use("/userAlgo", userAlgoController);
 
 let envConfig;
 
