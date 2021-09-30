@@ -1,112 +1,247 @@
 import express from 'express';
+import stripe from 'stripe';
+import dotenv from 'dotenv';
 import _ from "lodash";
-import { validateStripeNewProfil, validateStripeLinkCard, validateStripeNewBilling, validateStripeUpdateProfil, validateStripeUpdateBilling } from '../store/validation';
+import { validateStripeLinkCard, validateStripeNewBilling, validateStripeUpdateProfil, validateStripeUpdateBilling, validateStripeSubscription } from '../store/validation';
+import { stripeUserCreation, stripeUserInfo, requestAuth } from '../store/middleware'
 
 export const StripeController = express.Router();
+const Stripe = stripe(dotenv.config().parsed.STRIPE_KEY);
 
-StripeController.post('/user', async (req, res) => {
-    const { error } = validateStripeNewProfil(req.body);
+StripeController.post('/user', requestAuth, async (req, res) => {
+    // try {
 
-    if (error)
-      return res.status(400).json({ error: error.details[0].message});
-    let StripeNewUser = _.pick(req.body, [
-        'email','name','address', 'description', 'phone']);
-
-    // Faire la création d'un utilisateur Stripe
-
-    console.log("post /user");
-    res.status(201).send(StripeNewUser);
+    // } catch (error) {
+    //   return res.status(403).json({error: error});
+    // }
+    try {
+      const userInfo = await stripeUserInfo(req.headers.authorization);
+      const customer = await Stripe.customers.create({
+          email: userInfo.email,
+          description: "New User",
+          name: userInfo.name
+      });
+      stripeUserCreation(req.headers.authorization, customer.id)
+      res.status(201).send(customer);
+    } catch (error) {
+      return res.status(403).json({error: error});
+    }
 });
 
-StripeController.get('/user/:id', async (req, res) => {
+StripeController.get('/user/:id', requestAuth, async (req, res) => {
+  try {
+    const customer = await Stripe.customers.retrieve(
+        req.params.id
+      );
 
-    // Faire la laison de la carte et de l'utilisateur sur Stripe
-
-    let stripeUserInfo = [];
-    console.log("get /user/:id");
-    
-    res.status(201).send(stripeUserInfo);
+    res.status(201).send(customer);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.put('/user/:id', async (req, res) => {
+StripeController.put('/user/:id', requestAuth, async (req, res) => {
+  try {
     const { error } = validateStripeUpdateProfil(req.body);
 
     if (error)
       return res.status(400).json({ error: error.details[0].message});
-    let StripeNewDataUser = _.pick(req.body, [
-        'email','name','address', 'description', 'phone']);
-    // Faire la mise à jours des informations d'un profil sur Stripe
 
-    let stripeUserInfo = [];
-
-    console.log("put /user/:id");
-
-    
-    res.status(201).send(stripeUserInfo);
+    const customer = await Stripe.customers.update(
+        req.params.id,
+        {
+            email: req.body.email,
+            name: req.body.username,
+            description: req.body.description
+        }
+      );
+    res.status(201).send(customer);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.post('/cardLink', async (req, res) => {
+StripeController.post('/cardLink', requestAuth, async (req, res) => {
+  try {
     const { error } = validateStripeLinkCard(req.body);
 
     if (error)
       return res.status(400).json({ error: error.details[0].message});
-
-    // Faire la laison de la carte et de l'utilisateur sur Stripe
-    console.log("post /cardlink");
-    let StripeNewUser = []
-    res.status(201).send(StripeNewUser);
+    const userInfo = await stripeUserInfo(req.headers.authorization);
+    const paymentMethod = await Stripe.paymentMethods.attach(
+        req.body.cardId,
+        {customer: userInfo.stripeId}
+      );
+    await Stripe.customers.update(
+        userInfo.stripeId,
+        {
+            invoice_settings: {default_payment_method: req.body.cardId}
+        }
+      );
+    res.status(201).send(paymentMethod);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.post('/billing', async (req, res) => {
+StripeController.post('/billing', requestAuth, async (req, res) => {
+  try {
     const { error } = validateStripeNewBilling(req.body);
 
     if (error)
       return res.status(400).json({ error: error.details[0].message});
+    const userInfo = await stripeUserInfo(req.headers.authorization);
 
-    // Faire la création du nouveau paiement sur stripe
-    console.log("post /billing");
+    const customer = await Stripe.customers.retrieve(
+        userInfo.stripeId
+    );
 
-    res.status(201).send("New user created on Stripe");
+    const paymentIntent = await Stripe.paymentIntents.create({
+      amount: req.body.amount,
+      currency: "eur",
+      customer: userInfo.stripeId,
+      description: "New billing",
+      receipt_email: userInfo.email,
+      payment_method: customer.invoice_settings.default_payment_method,
+      confirm: true
+    });
+
+    res.status(201).send(paymentIntent);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.get('/billing', async (req, res) => {
-
-    // Faire la laison de la carte et de l'utilisateur sur Stripe
-
-    let billingList = [];
-    console.log("get /billing");
+StripeController.get('/billing', requestAuth, async (req, res) => {
+  try {
+    const charges = await Stripe.paymentIntents.list({
+        limit: 50,
+      });
     
-    res.status(201).send(billingList);
+    res.status(201).send(charges);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.get('/billing/:id', async (req, res) => {
-
-    // Get the billing by giving the billing id
-
-    let billing = [];
-    console.log("get /billing/:id");
+StripeController.get('/billing/:id', requestAuth, async (req, res) => {
+  try {
+    const charge = await Stripe.paymentIntents.retrieve(
+        req.params.id
+      );
     
-    res.status(201).send(billing);
+    res.status(201).send(charge);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.put('/billing/:id', async (req, res) => {
+StripeController.get('/billingUser/:id', requestAuth, async (req, res) => {
+  try {
+  const charges = await Stripe.paymentIntents.list({
+    limit: 50,
+    customer: req.params.id
+  });
+  
+  res.status(201).send(charges);
+} catch (error) {
+  return res.status(403).json({error: error});
+}
+});
+
+StripeController.put('/billing/:id', requestAuth, async (req, res) => {
+  try {
     const { error } = validateStripeUpdateBilling(req.body);
 
     if (error)
       return res.status(400).json({ error: error.details[0].message});
-    // Update the billing by giving the billing id
-    console.log("put /billing/:id");
-
-    let billing = [];
+    const charge = await Stripe.paymentIntents.update(
+        req.params.id,
+        {
+            customer: req.body.stripeId,
+            description: req.body.description,
+            receipt_email: req.body.receipt_email
+        }
+    );
     
-    res.status(201).send(billing);
+    res.status(201).send(charge);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
 
-StripeController.delete('/billing/:id', async (req, res) => {
-    // Delete the given billing
+StripeController.post('/subscription', requestAuth, async (req, res) => {
+  try {
+    const { error } = validateStripeSubscription(req.body);
 
-    let billing = [];
-    console.log("put /billing/:id");
-    
-    res.status(201).send(billing);
+      if (error)
+        return res.status(400).json({ error: error.details[0].message});
+
+    const userInfo = await stripeUserInfo(req.headers.authorization);
+    const customer = await Stripe.customers.retrieve(
+      userInfo.stripeId
+    );
+
+    let subscription_ = ""
+    if (req.body.subscription === "weekly")
+      subscription_ = "price_1JfMOMBVXYxPaZELLdQWNMjR"
+    else if (req.body.subscription === "monthly")
+      subscription_ = "price_1JfMOnBVXYxPaZELJiSl9ROP"
+      
+    const subscription = await Stripe.subscriptions.create({
+      customer: userInfo.stripeId,
+      default_payment_method: customer.invoice_settings.default_payment_method,
+      items: [
+        {price: subscription_},
+      ],
+    });
+    res.status(201).send(subscription);
+  } catch (error) {
+    return res.status(403).json({error: error});
+}
+});
+
+StripeController.get('/subscription', requestAuth, async (req, res) => {
+  try {
+    const subscriptions = await Stripe.subscriptions.list({
+      limit: 50,
+    });
+    res.status(201).send(subscriptions);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
+StripeController.get('/subscription/:id', requestAuth, async (req, res) => {
+  try {
+    const subscription = await Stripe.subscriptions.retrieve(
+      req.params.id
+    );
+    res.status(201).send(subscription);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
+StripeController.get('/subscriptionUser/:id', requestAuth, async (req, res) => {
+  try {
+    const subscriptions = await Stripe.subscriptions.list({
+      limit: 50,
+      customer: req.params.id
+    });
+    res.status(201).send(subscriptions);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
+StripeController.delete('/subscription/:id', requestAuth, async (req, res) => {
+  try {
+    const deleted = await Stripe.subscriptions.del(
+      req.params.id
+    );
+    res.status(201).send(deleted);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
 });
