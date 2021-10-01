@@ -39,10 +39,3 @@ userAlgoController.post('/', async (req, res) => {
         res.status(403).send(error);
 }
 });
-
-userAlgoController.get('/', async (req, res) => {
-    const apiResponse = await fetch('https://api.safely-app.fr/commercial/target', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
-        .then(response => response.json())
-
-    res.status(201).send(apiResponse);
-});
