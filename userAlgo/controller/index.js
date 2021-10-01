@@ -1,3 +1,3 @@
-import { ExampleController } from "./ExampleController";
+import { userAlgoController } from "./userAlgoController";
 
-export { ExampleController };
+export { userAlgoController };

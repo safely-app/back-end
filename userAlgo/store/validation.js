@@ -1,8 +1,8 @@
 import Joi from "joi";
 
-export function validateEmpty(marketingTarget) {
+export function ValidateAlgoPost(Target) {
   const schema = Joi.object({
-    empty: Joi.string() .min(0) .max(10)
+    targetId: Joi.string() .length(24) .required()
   })
-  return schema.validate(marketingTarget);
+  return schema.validate(Target);
 }
