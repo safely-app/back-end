@@ -1,0 +1,9 @@
+rm -f ../bashupload.log
+rm -rf ./tests/karate/karate-0.9.6/target/karate-reports
+
+cd ./tests/karate/karate-0.9.6/
+./karate
+
+tar -czvf ./target/karate-reports.tgz ./target/karate-reports && curl --upload-file ./target/karate-reports.tgz https://transfer.sh/reports.tgz > ../../../bashupload.log
+
+cd ../..

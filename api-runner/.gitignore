@@ -1,0 +1,3 @@
+.env
+bashupload.log
+tests/karate/tests/config.json
