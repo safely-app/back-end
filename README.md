@@ -6,7 +6,7 @@
 ## Services:
 
 -  ❌ (Authentification) Service who handle users and permissions.
--  ❌ (Safeplace) Service who handle safeplaces informations, edition and claims.
+-  ✅ (Safeplace) Service who handle safeplaces informations, edition and claims.
 -  ✅ (Commercial) Service who handle the cycle of life of a campains and billing.
 -  ✅ (Advertising) Service who broadcast the good ad to a targeted user.
 -  ✅ (Stripe) Service who handle the relations with stripe.
