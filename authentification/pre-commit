@@ -1,0 +1,32 @@
+#!/bin/sh
+
+yellow="\e[93m"
+bold="\e[1m"
+normal="\e[0m"
+error="\e[101m"
+success="\e[42m"
+
+echo -e $yellow $bold "-> Starting pre-commit hook...\n"
+echo -e "-> Starting App..." $normal
+
+npm run karate &
+
+sleep 5
+echo Starting Karate ...
+sleep 5
+
+cd test/karate/karate-0.9.6 
+./karate
+
+status=$?
+
+echo Stopping app ..
+pkill node
+if [ $status -eq 0 ]
+then
+    echo -e $success "THIS LOOK LIKE A GREAT COMMIT !"
+ 
+else
+    echo -e $error "TESTS FAILED - PLEASE FIX THAT BEFORE ANY PUSH !"
+fi
+exit $status
