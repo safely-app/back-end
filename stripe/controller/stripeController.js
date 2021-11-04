@@ -84,6 +84,18 @@ StripeController.post('/cardLink', requestAuth, async (req, res) => {
   }
 });
 
+StripeController.get('/user/card/:id', requestAuth, async (req, res) => {
+  try {
+    const cards = await Stripe.paymentMethods.list({
+        customer: req.params.id,
+        type: 'card',
+    });
+    res.status(201).send(cards);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
 StripeController.post('/billing', requestAuth, async (req, res) => {
   try {
     const { error } = validateStripeNewBilling(req.body);
