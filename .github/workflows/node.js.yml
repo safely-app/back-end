@@ -11,7 +11,7 @@ jobs:
     
     steps:
         - name: Invoke deployment hook
-          uses: distributhor/workflow-webhook@v1
-          env:
-            webhook_url: ${{ secrets.WEBHOOK_URL }}
-            webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          uses: muinmomin/webhook-action@v1.0.0
+          with:
+            url: ${{ secrets.WEBHOOK_URL }}
+            data: "{'command': 'deploy'}"
