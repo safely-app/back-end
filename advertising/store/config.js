@@ -1,8 +1,8 @@
 export const config = {
   dev: {
-    port: 8083,
+    port: process.env.PORT | 8084,
   },
   prod: {
-    port: 8083,
+    port: process.env.PORT | 8084,
   }
 };
