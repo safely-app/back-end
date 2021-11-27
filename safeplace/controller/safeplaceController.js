@@ -103,6 +103,9 @@ async function createOpenStreetMapSafeplace(safeplace) {
   const type = safeplace.tags.shop;
   const name = safeplace.tags.name ? safeplace.tags.name : safeplace.tags.brand;
   const timetable = getTimetable(safeplace.tags.opening_hours);
+  const email = safeplace.tags.email;
+  const phone = safeplace.tags.phone;
+  const web = safeplace.tags.website;
 
   if (coordinates && (address === 'undefined' || city === undefined)) {
     const result = await getAddressWithCoords(coordinates)
@@ -119,6 +122,9 @@ async function createOpenStreetMapSafeplace(safeplace) {
     coordinate: Object.values(coordinates),
     dayTimetable: timetable,
     type: type,
+    email: email,
+    phone: phone,
+    web: web
   }
 
   Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
@@ -128,12 +134,16 @@ async function createOpenStreetMapSafeplace(safeplace) {
     return;
   }
 
-  // console.log(doc.coordinate);
   Safeplace.findOne({ address: doc.address })
     .then(async (found) => {
-      if (found)
-        console.error("This safeplace already exist");
-      else {
+      if (found) {
+        const updated = await found.update(doc);
+
+        if (updated)
+          console.log("Safeplace updated");
+        else
+          console.error("An error occured");
+      } else {
         const created = await Safeplace.create(doc);
 
         if (created)
