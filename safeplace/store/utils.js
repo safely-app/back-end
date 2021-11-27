@@ -1,4 +1,7 @@
 import axios from "axios";
+import nodemailer from "nodemailer";
+
+import { config } from "./config";
 
 export function getAddressWithCoords(coords) {
   if (!coords || !coords.lat || !coords.lon) {
@@ -62,6 +65,38 @@ export function getTimetable(openingHours) {
   }
 
   return timetable;
+}
+
+export async function sendTimetableVerificationEmail(email, id) {
+  const transporter = nodemailer.createTransport({
+    host: 'in-v3.mailjet.com',
+    port: 587,
+    auth: {
+      user: '067fbf023590a210f21af749b51fb4d9',
+      pass: 'd5ee92039cc7e72f0651c2a1847dd55e'
+    }
+  });
+
+  const mailOptions = {
+    from: '"Safely" <safelyfrance@gmail.com>',
+    to: email,
+    subject: 'Verification of opening hours - Safely',
+    html: '<h4><b>Verification of opening hours for Safely</b></h4>' +
+        '<p>To verify your opening hours on safely, click on this link:</p>' +
+        '<a href=' + config.clientUrl + '/verifyHours/' + id + '>' + config.clientUrl + '/verifyHours/' + id + '</a>' +
+        '<br><br>' +
+        '<p>Thanks a lot</p>' +
+        '<br><br>' +
+        '<p>Safely Team</p>'
+  }
+
+  try {
+    // TODO uncomment to send the emails
+    //await transporter.sendMail(mailOptions);
+    return {status: 200, message: "Email sent!"};
+  } catch (err) {
+    return {status: 500, message: "An error occurred while sending email"}
+  }
 }
 
 // Ph === public hollydays 

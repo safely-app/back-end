@@ -13,4 +13,6 @@ export const config = {
     mongoHostName: 'localhost',
     communicationKEY: dotenv.config().parsed.COMMUNICATION_KEY
   },
+  senderEmail: '"Safely" <noreply@safely.fr>',
+  clientUrl: "https://front.safely-app.fr"
 };

@@ -210,6 +210,9 @@ SafeplaceController.put('/:id', requestAuth, async (req, res) => {
     dayTimetable: req.body.dayTimetable,
     grade: req.body.grade,
     type: req.body.type,
+    email: req.body.email,
+    phone: req.body.phone,
+    web: req.body.web
   };
 
   Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
