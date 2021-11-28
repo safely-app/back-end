@@ -8,7 +8,7 @@ import { Safeplace } from "../database/models/";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
-import {getAddressWithCoords, getTimetable} from "../store/utils";
+import {getAddressWithCoords, getTimetable, cutAfterRadius} from "../store/utils";
 import {requestAuth} from "../store/middleware";
 
 export const SafeplaceController = express.Router();
@@ -58,6 +58,25 @@ SafeplaceController.post('/birdNearest/:number', requestAuth, async (req, res) =
     return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
   });
   const closest = orderByDistance(req.body.coord, coordinates).slice(0, req.params.number);
+
+  res.status(200).json({nearest: closest});
+})
+
+SafeplaceController.post('/nearestRadius/:distance', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const { error } = validateNearest(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message});
+  }
+
+  const safeplaces = await Safeplace.find();
+  const coordinates = safeplaces.map((a) => {
+    return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
+  });
+  let closest = orderByDistance(req.body.coord, coordinates).slice(0, req.params.number);
+  closest = await cutAfterRadius(req.body.coord, closest, req.params.distance);
 
   res.status(200).json({nearest: closest});
 })
