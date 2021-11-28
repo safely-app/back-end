@@ -7,8 +7,8 @@ import { requestAuth } from "../store/middleware";
 export const MailingController = express.Router();
 
 MailingController.get("/", async (req, res) => {
-    // if (req.authResponse.role !== 'admin')
-    //     return res.status(401).json({message: "Unauthorized"});
+    if (req.authResponse.role !== 'admin')
+        return res.status(401).json({message: "Unauthorized"});
 
     const safeplaces = await Safeplace.find({ "email": { $exists: true } });
 
@@ -18,4 +18,3 @@ MailingController.get("/", async (req, res) => {
 
     return res.status(200).json({message: "Mails sent"});
 })
-

@@ -7,7 +7,7 @@ import through from 'through2';
 import { Safeplace } from "../database/models/";
 import { orderByDistance } from "geolib";
 
-import { validateSafeplaceCreation } from "../store/validation";
+import {validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
 import {getAddressWithCoords, getTimetable} from "../store/utils";
 import {requestAuth} from "../store/middleware";
 
@@ -272,3 +272,30 @@ async function updateOrCreateSafeplace(payload, type)
     await Safeplace.updateOne({ safeplaceId: doc.safeplaceId }, doc, { upsert: true });
   }
 }
+
+SafeplaceController.get("/getHours/:safeplaceId", async (req, res) => {
+  if (req.params.safeplaceId.length !== 24)
+    return res.status(400).json({ "Error": "safeplaceId should be 24 characters long" });
+  const safeplace = await Safeplace.findOne({ _id: req.params.safeplaceId});
+
+  if (safeplace)
+    res.status(200).json({ 'dayTimetable': safeplace.dayTimetable});
+  else
+    res.status(400).json({ "message": "Safeplace not found" });
+})
+
+SafeplaceController.put("/modifyHours/:safeplaceId", async (req, res) => {
+  if (req.params.safeplaceId.length !== 24)
+    return res.status(400).json({ "Error": "safeplaceId should be 24 characters long" });
+
+  const { error } = validateSafeplaceUpdateHours(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message});
+  }
+
+  const updated = await Safeplace.findOneAndUpdate({ _id: req.params.safeplaceId }, {dayTimetable: req.body.dayTimetable});
+  if (updated)
+    res.status(200).send('Updated');
+  else
+    res.status(400).json({message: "Could not update or safeplace not found"})
+})

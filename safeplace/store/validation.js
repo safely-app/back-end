@@ -79,3 +79,11 @@ export function validateSafeplaceCommentModification(comment) {
 
   return schema.validate(comment)
 }
+
+export function validateSafeplaceUpdateHours(safeplace) {
+  const schema = Joi.object({
+    dayTimetable: Joi.array().items(Joi.string().allow(null).allow('')) .min(7) .max(7) .required()
+  })
+
+  return schema.validate(safeplace)
+}
