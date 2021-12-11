@@ -31,6 +31,16 @@ const userSchema = new Schema({
         required: false,
         minlength: 0,
         maxlength: 100
+    },
+    age: {
+        type: Number,
+        required: false,
+    },
+    gender: {
+        type: String,
+        required: false,
+        minlength: 0,
+        maxlength: 3
     }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}})
 
