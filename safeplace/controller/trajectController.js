@@ -14,8 +14,8 @@ TrajectController.post('/', async (req, res) => {
 
     let waypoints = [];
     const safeplaces = await Safeplace.find();
-    const safeplacesCoordinates = safeplaces.map((a) => {
-        return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
+    const safeplacesCoordinates = safeplaces.map((safeplace) => {
+        return {latitude: safeplace.coordinate[0], longitude: safeplace.coordinate[1]};
     });
 
     for (const index in req.body.coordinates) {
