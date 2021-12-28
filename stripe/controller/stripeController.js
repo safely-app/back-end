@@ -190,7 +190,6 @@ StripeController.post('/subscription', requestAuth, async (req, res) => {
     const customer = await Stripe.customers.retrieve(
       userInfo.stripeId
     );
-    // Req.body.subscription doit être soit weekly soit monthly d'autres orthographes doivent être invalide
     let subscription_ = ""
     if (req.body.subscription === "weekly") {
       subscription_ = Weekly

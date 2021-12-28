@@ -34,7 +34,7 @@ export function validateStripeUpdateBilling(BillingInformation) {
 
 export function validateStripeSubscription(BillingInformation) {
   const schema = Joi.object({
-    subscription: Joi.string() .min(5) .max(10)
+    subscription: Joi.string().valid('weekly', 'monthly')
   })
   return schema.validate(BillingInformation);
 }
