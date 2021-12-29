@@ -99,4 +99,17 @@ export async function sendTimetableVerificationEmail(email, id) {
   }
 }
 
+export async function cutAfterRadius(coordinates, closest, distance) {
+  let safeplaces = [];
+
+  for (const index in closest) {
+    let result = (closest[index].latitude - coordinates.latitude) + (closest[index].longitude - coordinates.longitude)
+    if (result < 0)
+      result *= -1;
+    if (result <= distance)
+      safeplaces.push(closest[index])
+  }
+  return safeplaces;
+}
+
 // Ph === public hollydays 

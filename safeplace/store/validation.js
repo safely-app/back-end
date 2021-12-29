@@ -87,3 +87,14 @@ export function validateSafeplaceUpdateHours(safeplace) {
 
   return schema.validate(safeplace)
 }
+
+export function validateNearest(safeplace) {
+  const schema = Joi.object({
+    coord: Joi.object({
+      latitude: Joi.number() .required(),
+      longitude: Joi.number() .required()
+    }) .required()
+  })
+
+  return schema.validate(safeplace)
+}
