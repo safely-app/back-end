@@ -35,6 +35,15 @@ const safeplaceSchema = new Schema({
   type: {
     type: String,
     required: true
+  },
+  email: {
+    type: String
+  },
+  phone: {
+    type: String
+  },
+  web: {
+    type: String
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 

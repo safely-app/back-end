@@ -1,0 +1,16 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+  
+    runs-on: ubuntu-latest
+    
+    steps:
+        - name: Invoke deployment hook
+          uses: muinmomin/webhook-action@v1.0.0
+          with:
+            url: ${{ secrets.WEBHOOK_URL }}

@@ -3,7 +3,7 @@ import fs from "fs";
 
 export const config = {
     dev: {
-        port: 8080,
+        port: process.env.PORT | 8080,
         mongoDBUri: 'mongodb://localhost/safely',
         mongoHostName: 'localhost',
         privateKEY: fs.readFileSync('./store/private.key'),
@@ -11,7 +11,7 @@ export const config = {
         communicationKEY: dotenv.config().parsed.COMMUNICATION_KEY
     },
     prod: {
-        port: 8080,
+        port: process.env.PORT | 8080,
         mongoDBUri: process.env.DB_URL,
         mongoHostName: 'Production',
         privateKEY: fs.readFileSync('./store/private.key'),
