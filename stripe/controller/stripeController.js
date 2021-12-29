@@ -7,13 +7,10 @@ import { stripeUserCreation, stripeUserInfo, requestAuth } from '../store/middle
 
 export const StripeController = express.Router();
 const Stripe = stripe(dotenv.config().parsed.STRIPE_KEY);
+const Monthly = dotenv.config().parsed.MONTHLY
+const Weekly = dotenv.config().parsed.WEEKLY
 
 StripeController.post('/user', requestAuth, async (req, res) => {
-    // try {
-
-    // } catch (error) {
-    //   return res.status(403).json({error: error});
-    // }
     try {
       const userInfo = await stripeUserInfo(req.headers.authorization);
       const customer = await Stripe.customers.create({
@@ -79,6 +76,18 @@ StripeController.post('/cardLink', requestAuth, async (req, res) => {
         }
       );
     res.status(201).send(paymentMethod);
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
+StripeController.get('/user/card/:id', requestAuth, async (req, res) => {
+  try {
+    const cards = await Stripe.paymentMethods.list({
+        customer: req.params.id,
+        type: 'card',
+    });
+    res.status(201).send(cards);
   } catch (error) {
     return res.status(403).json({error: error});
   }
@@ -181,15 +190,15 @@ StripeController.post('/subscription', requestAuth, async (req, res) => {
     const customer = await Stripe.customers.retrieve(
       userInfo.stripeId
     );
-
     let subscription_ = ""
-    if (req.body.subscription === "weekly")
-      subscription_ = "price_1JfMOMBVXYxPaZELLdQWNMjR"
-    else if (req.body.subscription === "monthly")
-      subscription_ = "price_1JfMOnBVXYxPaZELJiSl9ROP"
-      
+    if (req.body.subscription === "weekly") {
+      subscription_ = Weekly
+    }
+    else if (req.body.subscription === "monthly") {
+      subscription_ = Monthly
+    }
     const subscription = await Stripe.subscriptions.create({
-      customer: userInfo.stripeId,
+      customer: customer.id,
       default_payment_method: customer.invoice_settings.default_payment_method,
       items: [
         {price: subscription_},
