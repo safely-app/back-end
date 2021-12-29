@@ -4,7 +4,15 @@ import logger from 'winston';
 import cors from 'cors';
 
 
-import { SafeplaceController, fetchMarket, RecurringRouteController, SafeplaceCommentController, RequestClaimSafeplaceController, MailingController } from "./controller";
+import {
+  SafeplaceController,
+  fetchMarket,
+  RecurringRouteController,
+  SafeplaceCommentController,
+  RequestClaimSafeplaceController,
+  MailingController,
+  TrajectController
+} from "./controller";
 import { config } from "./store/config";
 
 const app = express();
@@ -18,6 +26,7 @@ app.use("/recurring", RecurringRouteController);
 app.use("/requestClaimSafeplace", RequestClaimSafeplaceController);
 app.use("/comment", SafeplaceCommentController);
 app.use("/mailing", MailingController);
+app.use("/traject", TrajectController);
 
 // setInterval(async () => {
 //   await fetchMarket();

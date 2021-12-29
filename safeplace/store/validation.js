@@ -98,3 +98,14 @@ export function validateNearest(safeplace) {
 
   return schema.validate(safeplace)
 }
+
+export function validateTraject(traject) {
+  const schema = Joi.object( {
+    coordinates : Joi.array().items(Joi.object({
+      latitude: Joi.number() .required(),
+      longitude: Joi.number() .required()
+    })) .required()
+  })
+
+  return schema.validate(traject)
+}

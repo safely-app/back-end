@@ -112,4 +112,15 @@ export async function cutAfterRadius(coordinates, closest, distance) {
   return safeplaces;
 }
 
+export async function calculateMetersWithCoordinates(coordinateA, coordinateB) {
+  const latA = coordinateA.latitude * (Math.PI / 180);
+  const latB = coordinateB.latitude * (Math.PI / 180);
+  const lonA = coordinateA.longitude * (Math.PI / 180);
+  const lonB = coordinateB.longitude * (Math.PI / 180);
+
+  const result = 6372795.477598 * Math.acos(Math.sin(latA) * Math.sin(latB) + Math.cos(latA) * Math.cos(latB) * Math.cos(lonA - lonB));
+
+  return Math.round(result);
+}
+
 // Ph === public hollydays 
