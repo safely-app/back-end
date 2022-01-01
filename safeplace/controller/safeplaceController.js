@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {response} from 'express';
 import fetch from 'node-fetch';
 import https from 'https';
 import fs from 'fs';
@@ -8,8 +8,10 @@ import { Safeplace } from "../database/models/";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
-import {getAddressWithCoords, getTimetable, cutAfterRadius} from "../store/utils";
+import {getAddressWithCoords, getTimetable, cutAfterRadius, calculateMetersWithCoordinates} from "../store/utils";
 import {requestAuth} from "../store/middleware";
+import axios from "axios";
+import {config} from "../store/config";
 
 export const SafeplaceController = express.Router();
 
@@ -24,9 +26,9 @@ SafeplaceController.get('/', requestAuth, async (req, res) => {
     res.status(500).json({message: "No safeplaces found"});
 })
 
-SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
-  if (req.authResponse.role === 'empty')
-    return res.status(401).json({message: "Unauthorized"})
+SafeplaceController.post('/nearest', async (req, res) => {
+  // if (req.authResponse.role === 'empty')
+  //   return res.status(401).json({message: "Unauthorized"})
 
   const { error } = validateNearest(req.body);
   if (error) {
@@ -39,9 +41,24 @@ SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
   });
   const closest = orderByDistance(req.body.coord, coordinates);
 
-  //TODO pour l'instant vol d'oiseau mais changer avec une api pour réel
+  let nearest = undefined
+  let nearest_duration = undefined
+  let index = 0;
+  while (index < 3) {
+    const response = await axios
+        .get(`https://maps.googleapis.com/maps/api/directions/json?origin=${req.body.coord.latitude},${req.body.coord.longitude}&destination=${closest[index].latitude},${closest[index].longitude}&key=${config.prod.GOOGLE_API_KEY}&mode=walking&language=fr`
+            , {headers: {"Content-type": "application/json"}});
 
-  res.status(200).json({nearest: closest[0]});
+    const duration = parseInt(response.data.routes[0].legs[0].duration.text.split(' ')[0]);
+    if (nearest === undefined || nearest_duration > duration) {
+      nearest = closest[index]
+      nearest_duration = duration
+    }
+    index++;
+  }
+  const real_nearest = await safeplaces.find(o => o.coordinate[0] === nearest.latitude && o.coordinate[1] === nearest.longitude)
+
+  res.status(200).json({nearest: real_nearest});
 })
 
 SafeplaceController.post('/birdNearest/:number', requestAuth, async (req, res) => {
