@@ -58,8 +58,14 @@ SafeplaceController.post('/birdNearest/:number', requestAuth, async (req, res) =
     return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
   });
   const closest = orderByDistance(req.body.coord, coordinates).slice(0, req.params.number);
+  let final_closest = []
 
-  res.status(200).json({nearest: closest});
+  for (const close in closest) {
+    const found = await safeplaces.find(o => o.coordinate[0] === closest[close].latitude && o.coordinate[1] === closest[close].longitude)
+    final_closest.push(found)
+  }
+
+  res.status(200).json({nearest: final_closest});
 })
 
 SafeplaceController.post('/nearestRadius/:distance', requestAuth, async (req, res) => {
@@ -77,8 +83,14 @@ SafeplaceController.post('/nearestRadius/:distance', requestAuth, async (req, re
   });
   let closest = orderByDistance(req.body.coord, coordinates).slice(0, req.params.number);
   closest = await cutAfterRadius(req.body.coord, closest, req.params.distance);
+  let final_closest = []
 
-  res.status(200).json({nearest: closest});
+  for (const close in closest) {
+    const found = await safeplaces.find(o => o.coordinate[0] === closest[close].latitude && o.coordinate[1] === closest[close].longitude)
+    final_closest.push(found)
+  }
+
+  res.status(200).json({nearest: final_closest});
 })
 
 SafeplaceController.get('/:id', requestAuth, async (req, res) => {
