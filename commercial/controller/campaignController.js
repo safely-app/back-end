@@ -1,6 +1,6 @@
 import express from 'express';
 import _ from "lodash";
-import { Campaign } from '../database/models';
+import { Campaign, MarketingTarget } from '../database/models';
 import { CampaignUserCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
 
@@ -28,6 +28,16 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
         const PickedCampaign = _.pick(campaign,
             ['_id', 'ownerId','name','budget', 'status', 'startingDate']);
     
+        let targetInfos = await new Promise((resolve, reject) => {
+            let targetInfos = [];
+            campaign.targets.forEach(async (item, index, array)=>{
+                let target = await MarketingTarget.findOne({ _id: item });
+                targetInfos.push({'ageRange': target.ageRange, 'csp': target.csp})
+                if (array.length === index + 1)
+                    resolve(targetInfos)
+            })
+        });
+        PickedCampaign.targets = targetInfos;
         res.send(PickedCampaign);
     } else
         res.status(404).json({error: "Campaign not found"});
