@@ -26,9 +26,9 @@ SafeplaceController.get('/', requestAuth, async (req, res) => {
     res.status(500).json({message: "No safeplaces found"});
 })
 
-SafeplaceController.post('/nearest', async (req, res) => {
-  // if (req.authResponse.role === 'empty')
-  //   return res.status(401).json({message: "Unauthorized"})
+SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
 
   const { error } = validateNearest(req.body);
   if (error) {
