@@ -1,8 +1,15 @@
 import express from 'express';
 import _ from "lodash";
-import { Campaign } from '../database/models';
+import { Campaign, MarketingTarget } from '../database/models';
 import { CampaignUserCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
+import cote from "cote";
+import {config} from "../store/config";
+
+const requester = new cote.Requester({
+    name: 'authentification',
+    key: config.dev.communicationKEY,
+});
 
 export const CampaignController = express.Router();
 
@@ -23,11 +30,37 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
 
 CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
+    let targetedUsers = []
+    let ageRanges = []
+    let csps = []
 
     if (campaign) {
         const PickedCampaign = _.pick(campaign,
             ['_id', 'ownerId','name','budget', 'status', 'startingDate']);
     
+        let targetInfos = await new Promise((resolve, reject) => {
+            let targetInfos = [];
+            campaign.targets.forEach(async (item, index, array)=>{
+                let target = await MarketingTarget.findOne({ _id: item });
+                targetInfos.push({'ageRange': target.ageRange, 'csp': target.csp})
+                if (array.length === index + 1)
+                    resolve(targetInfos)
+            })
+        });
+        const request = { type: 'users'}
+        const users = await requester.send(request);
+
+        targetInfos.forEach((item, index)=>{
+            ageRanges.push(item['ageRange'])
+            csps.push(item['csp'])
+        })
+        users.forEach((item, index)=>{
+            if (ageRanges.includes(item['age']) && csps.includes(item['csp'])) {
+                targetedUsers.push(item['_id'])
+            }
+        })
+        PickedCampaign.targetedUsers = targetedUsers;
+        PickedCampaign.targets = targetInfos;
         res.send(PickedCampaign);
     } else
         res.status(404).json({error: "Campaign not found"});

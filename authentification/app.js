@@ -7,7 +7,7 @@ import shell from 'shelljs';
 
 import { LoginController, RegisterController, UserController, ProfessionalinfoController } from "./controller";
 import { config } from "./store/config";
-import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder } from "./store/utils";
+import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder, usersResponder } from "./store/utils";
 
 const app = express();
 
@@ -21,6 +21,7 @@ app.use("/user", UserController);
 app.use("/professionalinfo", ProfessionalinfoController);
 
 authResponder();
+usersResponder();
 stripeUserCreationResponder();
 stripeUserInfoResponder();
 
