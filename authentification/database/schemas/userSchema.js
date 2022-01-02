@@ -33,7 +33,11 @@ const userSchema = new Schema({
         maxlength: 100
     },
     age: {
-        type: Number,
+        type: String,
+        required: false,
+    },
+    csp: {
+        type: String,
         required: false,
     },
     gender: {

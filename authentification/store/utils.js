@@ -56,6 +56,8 @@ export function validateUpdateUser(user) {
     username: Joi.string() .min(1) .max(50),
     email: Joi.string() .min(1) .max(255) .email(),
     role: Joi.string() .min(1) .max(50),
+    age: Joi.string() .min(1) .max(7),
+    csp: Joi.string() .min(1) .max(6),
     password: Joi.string() .min(1) .max(255),
     stripeId: Joi.string() .min(0) .max(100)
   });
@@ -155,6 +157,13 @@ export async function sendResetPasswordEmail(user, token) {
   }
 }
 
+export async function usersResponder() {
+  responder.on('users', async (req, cb) => {
+      const users = await User.find({});
+      cb(null, users);
+  });
+}
+
 export async function authResponder() {
   responder.on('owner or admin', async (req, cb) => {
       const usertoken = req.jwt;
@@ -166,7 +175,7 @@ export async function authResponder() {
           const decoded = jwt.verify(token[1], config.dev.publicKEY);
           const user = await User.findOne({_id: decoded._id});
           let right = "false";
-  
+
           if (user.role === "admin" || user.id === ownerId)
             right = "true";
           
