@@ -1,4 +1,4 @@
-import { MarketingTarget, Campaign } from "../database/models";
+import { MarketingTarget, Campaign, Advertising } from "../database/models";
 import { config } from "./config";
 import cote from "cote";
 
@@ -56,4 +56,37 @@ export async function marketingTargetUserCheck(req, res, next) {
     if (response.right === "false"|| response.right === "no")
         return res.status(500).json({ error: response.right});
     next();
+}
+
+export async function AdvertisingUserCheck(req, res, next) {
+    try {
+        const advertising = await Advertising.findOne({_id: req.params.id});
+        req.middleware_values = advertising
+        req.middleware_values._id = advertising.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(advertising.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Advertising not found"});
+    }
+}
+
+export async function AdvertisingOwnerCheck(req, res, next) {
+    try {
+        const advertising = await Advertising.findOne({ownerId: req.params.id});
+        console.log(advertising)
+        req.middleware_values = advertising
+        req.middleware_values._id = advertising.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(advertising.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Advertising not found"});
+    }
 } 

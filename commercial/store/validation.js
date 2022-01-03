@@ -45,3 +45,25 @@ export function validateCampaign(campaign) {
   })
   return schema.validate(campaign);
 }
+
+export function putValidateAdvertising(campaign) {
+  const schema = Joi.object({
+    ownerId: Joi.string() .length(24),
+    title: Joi.string() .min(1) .max(25),
+    description: Joi.string() .min(1) .max(255),
+    imageUrl: Joi.string() .min(1) .max(255),
+    targetType: Joi.array().items(Joi.string()) .min(0) .max(10),
+  })
+  return schema.validate(campaign);
+}
+
+export function validateAdvertising(campaign) {
+  const schema = Joi.object({
+    ownerId: Joi.string() .length(24).required(),
+    title: Joi.string() .min(1) .max(25) .required(),
+    description: Joi.string() .min(1) .max(255) .required(),
+    imageUrl: Joi.string() .min(1) .max(255) .required(),
+    targetType: Joi.array().items(Joi.string()) .min(0) .max(10) .required()
+  })
+  return schema.validate(campaign);
+}
