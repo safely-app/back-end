@@ -20,9 +20,12 @@ SafeplaceController.get('/', requestAuth, async (req, res) => {
 
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
-  if (safeplaces)
-    res.status(200).json(safeplaces);
-  else
+  if (safeplaces) {
+    if (req.query.limit && req.query.offset)
+      res.status(200).json(safeplaces.splice(req.query.offset).slice(0, req.query.limit))
+    else
+      res.status(200).json(safeplaces);
+  } else
     res.status(500).json({message: "No safeplaces found"});
 })
 
