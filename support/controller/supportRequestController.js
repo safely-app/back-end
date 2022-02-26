@@ -5,9 +5,9 @@ import {requestAuth, SupportUserCheck} from "../store/middleware";
 
 export const SupportRequestController = express.Router();
 
-SupportRequestController.get('/', async (req, res) => {
-  // if (req.authResponse.role === 'admin')
-  //   return res.status(401).json({message: "Unauthorized"})
+SupportRequestController.get('/', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'admin')
+    return res.status(401).json({message: "Unauthorized"})
 
   const support = await SupportRequest.find({});
 
@@ -17,9 +17,9 @@ SupportRequestController.get('/', async (req, res) => {
     res.status(500).json({message: "No support requests found"});
 })
 
-SupportRequestController.get('/user/:userId', async (req, res) => {
-  // if (req.authResponse.role === 'empty')
-  //   return res.status(401).json({message: "Unauthorized"})
+SupportRequestController.get('/user/:userId', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
 
   const support = await SupportRequest.find({userId: req.params.userId});
 
@@ -29,9 +29,9 @@ SupportRequestController.get('/user/:userId', async (req, res) => {
     res.status(500).json({message: "No support requests found for this user"});
 })
 
-SupportRequestController.get('/:id', async (req, res) => {
-  // if (req.authResponse.role === 'empty')
-  //   return res.status(401).json({message: "Unauthorized"})
+SupportRequestController.get('/:id', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
 
   const support = await SupportRequest.findOne({_id: req.params.id});
 
@@ -41,9 +41,9 @@ SupportRequestController.get('/:id', async (req, res) => {
     res.status(500).json({message: "Support request not found"});
 })
 
-SupportRequestController.post("/", async (req, res) => {
-  // if (req.authResponse.role === 'empty')
-  //   return res.status(401).json({message: "Unauthorized"})
+SupportRequestController.post("/", requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
 
   const { error } = validateSupportRequestCreation(req.body);
 
@@ -68,7 +68,7 @@ SupportRequestController.post("/", async (req, res) => {
     res.status(500).json({message: "An error occured"});
 })
 
-SupportRequestController.put("/:id", async (req, res) => {
+SupportRequestController.put("/:id", SupportUserCheck, async (req, res) => {
   const { error } = validateSupportRequestUpdate(req.body);
 
   if (error) {
@@ -90,7 +90,7 @@ SupportRequestController.put("/:id", async (req, res) => {
   })
 })
 
-SupportRequestController.delete("/:id", async (req, res) => {
+SupportRequestController.delete("/:id", SupportUserCheck, async (req, res) => {
   SupportRequest.deleteOne({ _id: req.params.id })
     .then(() => {
       res.status(200).json({ message: 'Support request deleted !' });
