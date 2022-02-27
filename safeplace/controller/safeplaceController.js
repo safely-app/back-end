@@ -1,19 +1,22 @@
-import express, {response} from 'express';
-import fetch from 'node-fetch';
+import express from 'express';
 import https from 'https';
 import fs from 'fs';
 import pbf2json from 'pbf2json';
 import through from 'through2';
-import { Safeplace } from "../database/models/";
+import {Safeplace} from "../database/models/";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
-import {getAddressWithCoords, getTimetable, cutAfterRadius, calculateMetersWithCoordinates} from "../store/utils";
+import {cutAfterRadius, createOpenStreetMapSafeplace} from "../store/utils";
 import {requestAuth} from "../store/middleware";
 import axios from "axios";
 import {config} from "../store/config";
 
 export const SafeplaceController = express.Router();
+
+// ##################################################
+// ################### Basic CRUD ###################
+// ##################################################
 
 SafeplaceController.get('/', requestAuth, async (req, res) => {
   const safeplaces = await Safeplace.find({});
@@ -25,6 +28,115 @@ SafeplaceController.get('/', requestAuth, async (req, res) => {
   else
     res.status(500).json({message: "No safeplaces found"});
 })
+
+SafeplaceController.get('/:id', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const safeplace = await Safeplace.findOne({ _id: req.params.id});
+
+  if (safeplace)
+    res.status(200).json(safeplace);
+  else
+    res.status(500).json({message: "This safeplace doesn't exist"});
+})
+
+SafeplaceController.get('/ownerSafeplace/:ownerId', requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const safeplace = await Safeplace.findOne({ ownerId: req.params.ownerId});
+
+  if (safeplace)
+    res.status(200).json(safeplace);
+  else
+    res.status(500).json({message: "No safeplace found for this owner"});
+})
+
+SafeplaceController.post('/', requestAuth, async (req, res) => {
+  if (req.authResponse.role !== 'admin')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const { error } = validateSafeplaceCreation(req.body);
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message});
+  }
+
+  const safeplace = {
+    safeplaceId: req.body.safeplaceId,
+    ownerId: req.body.ownerId,
+    name: req.body.name,
+    decription: req.body.decription,
+    city: req.body.city,
+    address: req.body.address,
+    coordinate: req.body.coordinate,
+    dayTimetable: req.body.dayTimetable,
+    grade: req.body.grade,
+    type: req.body.type,
+  };
+
+  Object.keys(safeplace).forEach(key => safeplace[key] === undefined ? delete safeplace[key] : {});
+
+  Safeplace.findOne({ address: safeplace.address })
+      .then(async (found) => {
+        if (found)
+          res.status(403).json({message: "This safeplace already exist"})
+        else {
+          const created = await Safeplace.create(safeplace);
+
+          if (created)
+            res.status(200).json({message: "Safeplace created"});
+          else
+            res.status(500).json({message: "An error occured"});
+        }
+      })
+})
+
+SafeplaceController.put('/:id', requestAuth, async (req, res) => {
+  if (req.authResponse.role !== 'admin')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const doc = {
+    safeplaceId: req.body.safeplaceId,
+    ownerId: req.body.ownerId,
+    name: req.body.name,
+    decription: req.body.decription,
+    city: req.body.city,
+    address: req.body.address,
+    coordinate: req.body.coordinate,
+    dayTimetable: req.body.dayTimetable,
+    grade: req.body.grade,
+    type: req.body.type,
+    email: req.body.email,
+    phone: req.body.phone,
+    web: req.body.web
+  };
+
+  Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
+
+  Safeplace.findByIdAndUpdate(req.params.id, doc, (err) => {
+    if (err)
+      return res.status(403).json({error: 'Update couldn\'t be proceed'})
+    return res.status(200).json({success: 'Updated!'})
+  })
+})
+
+SafeplaceController.delete('/:id', requestAuth, async (req, res) => {
+  if (req.authResponse.role !== 'admin')
+    return res.status(401).json({message: "Unauthorized"})
+
+  Safeplace.deleteOne({_id: req.params.id})
+      .then(()=> {
+        res.status(200).json({ message: 'Safeplace deleted !' });
+      })
+      .catch( (error) => {
+        res.status(400).json({ error: error });
+      });
+})
+
+// ######################################################
+// ################### Nearest ##########################
+// ######################################################
 
 SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
   if (req.authResponse.role === 'empty')
@@ -110,29 +222,9 @@ SafeplaceController.post('/nearestRadius/:distance', requestAuth, async (req, re
   res.status(200).json({nearest: final_closest});
 })
 
-SafeplaceController.get('/:id', requestAuth, async (req, res) => {
-  if (req.authResponse.role === 'empty')
-    return res.status(401).json({message: "Unauthorized"})
-
-  const safeplace = await Safeplace.findOne({ _id: req.params.id});
-
-  if (safeplace)
-    res.status(200).json(safeplace);
-  else
-    res.status(500).json({message: "This safeplace doesn't exist"});
-})
-
-SafeplaceController.get('/ownerSafeplace/:ownerId', requestAuth, async (req, res) => {
-  if (req.authResponse.role === 'empty')
-    return res.status(401).json({message: "Unauthorized"})
-
-  const safeplace = await Safeplace.findOne({ ownerId: req.params.ownerId});
-
-  if (safeplace)
-    res.status(200).json(safeplace);
-  else
-    res.status(500).json({message: "No safeplace found for this owner"});
-})
+// ########################################################
+// ################### OpenStreetMap ######################
+// ########################################################
 
 SafeplaceController.post('/openStreetMap', async (req, res) => {
 
@@ -166,181 +258,9 @@ SafeplaceController.post('/openStreetMap', async (req, res) => {
   });
 })
 
-async function createOpenStreetMapSafeplace(safeplace) {
-  let address = (safeplace.tags["addr:housenumber"] ? safeplace.tags["addr:housenumber"] + ' ' : '') + safeplace.tags["addr:street"];
-  let city = safeplace.tags["addr:city"];
-  const coordinates = safeplace.lat && safeplace.lon ? {lat: safeplace.lat, lon: safeplace.lon} : safeplace.centroid;
-  const type = safeplace.tags.shop;
-  const name = safeplace.tags.name ? safeplace.tags.name : safeplace.tags.brand;
-  const timetable = getTimetable(safeplace.tags.opening_hours);
-  const email = safeplace.tags.email;
-  const phone = safeplace.tags.phone;
-  const web = safeplace.tags.website;
-
-  if (coordinates && (address === 'undefined' || city === undefined)) {
-    const result = await getAddressWithCoords(coordinates)
-    if (result) {
-      address = result.address;
-      city = result.city;
-    }
-  }
-
-  const doc = {
-    name: name,
-    city: city,
-    address: address,
-    coordinate: Object.values(coordinates),
-    dayTimetable: timetable,
-    type: type,
-    email: email,
-    phone: phone,
-    web: web
-  }
-
-  Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
-
-  if (doc.city === undefined || doc.name === undefined) {
-    console.error("Safeplace invalid");
-    return;
-  }
-
-  Safeplace.findOne({ address: doc.address })
-    .then(async (found) => {
-      if (found) {
-        const updated = await found.update(doc);
-
-        if (updated)
-          console.log("Safeplace updated");
-        else
-          console.error("An error occured");
-      } else {
-        const created = await Safeplace.create(doc);
-
-        if (created)
-          console.log("Safeplace created");
-        else
-          console.error("An error occured");
-      }
-    })
-
-}
-
-SafeplaceController.post('/', requestAuth, async (req, res) => {
-  if (req.authResponse.role !== 'admin')
-    return res.status(401).json({message: "Unauthorized"})
-
-  const { error } = validateSafeplaceCreation(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message});
-  }
-
-  const safeplace = {
-    safeplaceId: req.body.safeplaceId,
-    ownerId: req.body.ownerId,
-    name: req.body.name,
-    decription: req.body.decription,
-    city: req.body.city,
-    address: req.body.address,
-    coordinate: req.body.coordinate,
-    dayTimetable: req.body.dayTimetable,
-    grade: req.body.grade,
-    type: req.body.type,
-    };
-
-  Object.keys(safeplace).forEach(key => safeplace[key] === undefined ? delete safeplace[key] : {});
-
-  Safeplace.findOne({ address: safeplace.address })
-    .then(async (found) => {
-      if (found)
-        res.status(403).json({message: "This safeplace already exist"})
-      else {
-        const created = await Safeplace.create(safeplace);
-
-        if (created)
-          res.status(200).json({message: "Safeplace created"});
-        else
-          res.status(500).json({message: "An error occured"});
-      }
-    })
-})
-
-SafeplaceController.put('/:id', requestAuth, async (req, res) => {
-  if (req.authResponse.role !== 'admin')
-    return res.status(401).json({message: "Unauthorized"})
-
-  const doc = {
-    safeplaceId: req.body.safeplaceId,
-    ownerId: req.body.ownerId,
-    name: req.body.name,
-    decription: req.body.decription,
-    city: req.body.city,
-    address: req.body.address,
-    coordinate: req.body.coordinate,
-    dayTimetable: req.body.dayTimetable,
-    grade: req.body.grade,
-    type: req.body.type,
-    email: req.body.email,
-    phone: req.body.phone,
-    web: req.body.web
-  };
-
-  Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
-
-  Safeplace.findByIdAndUpdate(req.params.id, doc, (err) => {
-    if (err)
-      return res.status(403).json({error: 'Update couldn\'t be proceed'})
-    return res.status(200).json({success: 'Updated!'})
-  })
-})
-
-SafeplaceController.delete('/:id', requestAuth, async (req, res) => {
-  if (req.authResponse.role !== 'admin')
-    return res.status(401).json({message: "Unauthorized"})
-
-  Safeplace.deleteOne({_id: req.params.id})
-    .then(()=> {
-      res.status(200).json({ message: 'Safeplace deleted !' });
-    })
-    .catch( (error) => {
-      res.status(400).json({ error: error });
-    });
-})
-
-export async function fetchMarket()
-{
-  const response = await fetch('https://data.strasbourg.eu/api/records/1.0/search/?dataset=marches_ems&q=&rows=200');
-  const payload = await response.json();
-
-  await updateOrCreateSafeplace(payload, "Market");
-}
-
-async function updateOrCreateSafeplace(payload, type)
-{
-  for (const item of payload.records) {
-    const days = ["lundis", "mardis", "mercredis", "jeudis", "vendredis", "samedis", "dimanches"];
-    let timetable = [];
-
-    days.forEach((day, index) => {
-      if (item.fields.jour.search(day) >= 0)
-        timetable.push(item.fields.horaire);
-      else
-        timetable.push(null);
-    })
-
-    const doc = {
-      safeplaceId: item.recordid,
-      name: item.fields.nom_marche,
-      description: "Ouvert " + item.fields.jour.toLowerCase() + " de " + item.fields.horaire,
-      city: item.fields.commune,
-      address: item.fields.adresse,
-      coordinate: [item.fields.geo_point_2d[0].toString(), item.fields.geo_point_2d[1].toString()],
-      dayTimetable: timetable,
-      type: type
-    };
-
-    await Safeplace.updateOne({ safeplaceId: doc.safeplaceId }, doc, { upsert: true });
-  }
-}
+// ############################################################
+// ################### Verify hours shop ######################
+// ############################################################
 
 SafeplaceController.get("/getHours/:safeplaceId", async (req, res) => {
   if (req.params.safeplaceId.length !== 24)

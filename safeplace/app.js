@@ -6,13 +6,13 @@ import cors from 'cors';
 
 import {
   SafeplaceController,
-  fetchMarket,
   RecurringRouteController,
   SafeplaceCommentController,
   RequestClaimSafeplaceController,
   MailingController,
   TrajectController
 } from "./controller";
+import { fetchMarket } from "./store/utils";
 import { config } from "./store/config";
 
 const app = express();
