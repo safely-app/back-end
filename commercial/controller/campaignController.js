@@ -28,6 +28,19 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
     });
 });
 
+CampaignController.put('/cost/:id', CampaignUserCheck, async (req, res) => {
+    let campaign = await Campaign.findOne({ _id: req.params.id });
+
+    if (campaign) {
+        if (campaign['budgetSpent'] + req.body.cost > campaign['budget'])
+            return res.status(200).json({error: "Your are trying to spend more than the campaign's budget."});
+        campaign['budgetSpent'] += req.body.cost;
+        campaign.save();
+        return res.status(200).json(campaign);
+    } else
+        return res.status(404).json({error: "Campaign not found"});
+});
+
 CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
     let targetedUsers = []
