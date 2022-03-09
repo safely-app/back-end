@@ -20,7 +20,7 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedCampaign = _.pick(target, [
-            '_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
             PickedCampaign.targets = target.targets;
             campaignsMap.push(PickedCampaign);
         });
@@ -36,7 +36,7 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
 
     if (campaign) {
         const PickedCampaign = _.pick(campaign,
-            ['_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
     
         let targetInfos = await new Promise((resolve, reject) => {
             let targetInfos = [];

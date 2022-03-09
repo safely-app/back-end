@@ -13,6 +13,11 @@ const campaignSchema = new Schema({
     type: Number,
     required: true
   },
+  budgetSpent: {
+    type: Number,
+    required: false,
+    default: 0
+  },
   status: {
     type: String,
     required: true
