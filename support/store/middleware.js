@@ -35,10 +35,7 @@ export async function SupportUserCheck(req, res, next) {
   req.middleware_values._id = support.ownerId
 
   const usertoken = req.headers.authorization;
-  console.log(support)
   const response = await ownerOrAdmin(support.ownerId, usertoken);
-  console.log(support.ownerId, usertoken)
-  console.log(response)
   if (response.right === "false" || response.right === "no")
     return res.status(500).json({ error: response.right});
   next();
