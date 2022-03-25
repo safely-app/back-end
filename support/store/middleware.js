@@ -32,10 +32,10 @@ async function ownerOrAdmin(ownerId, jwt) {
 export async function SupportUserCheck(req, res, next) {
   const support = await SupportRequest.findOne({_id: req.params.id});
   req.middleware_values = support
-  req.middleware_values._id = support.ownerId
+  req.middleware_values._id = support.userId
 
   const usertoken = req.headers.authorization;
-  const response = await ownerOrAdmin(support.ownerId, usertoken);
+  const response = await ownerOrAdmin(support.userId, usertoken);
   if (response.right === "false" || response.right === "no")
     return res.status(500).json({ error: response.right});
   next();
