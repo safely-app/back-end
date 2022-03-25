@@ -65,6 +65,22 @@ AnomalyController.get('/:id', requestAuth, async (req, res) => {
     res.status(500).json({message: "Support request not found"});
 })
 
+AnomalyController.post("/validate/:id", requestAuth, async (req, res) => {
+  if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const anomaly = await Anomaly.findOne({_id: req.params.id});
+
+  if (anomaly) {
+    Anomaly.findByIdAndUpdate(anomaly._id, {score: anomaly.score + 1}, (err) => {
+      if (err)
+        res.status(500).json({message: "An error occured"});
+      res.status(200).json({message: "Anomaly created"});
+    })
+  } else
+    res.status(500).json({message: "Anomaly not found"});
+})
+
 AnomalyController.post("/", requestAuth, async (req, res) => {
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
