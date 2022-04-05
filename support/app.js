@@ -3,18 +3,21 @@ import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
 
-import {CampaignController, MarketingTargetController, AdvertisingController} from "./controller/";
+
+import {
+  SupportRequestController,
+  AnomalyController
+} from "./controller";
 import { config } from "./store/config";
 
 const app = express();
 
 app.use(cors());
-app.use(express.urlencoded({extended: true}));
-app.use(express.json());
+app.use(express.urlencoded({extended: false, limit: "5mb"}));
+app.use(express.json({limit: "5mb"}));
 
-app.use("/target", MarketingTargetController);
-app.use("/campaign", CampaignController);
-app.use("/advertising", AdvertisingController);
+app.use("/support", SupportRequestController);
+app.use("/anomaly", AnomalyController);
 
 let envConfig;
 

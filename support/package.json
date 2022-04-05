@@ -4,8 +4,8 @@
   "description": "get ans stock information from an external service",
   "main": "../safeplace/app.js",
   "scripts": {
-    "start": "NODE_ENV=production node -r esm ../safeplace/app.js -p 8080",
-    "dev": "NODE_ENV=dev nodemon -r esm ../safeplace/app.js -p 8080",
+    "start": "NODE_ENV=production node -r esm ../support/app.js -p 8080",
+    "dev": "NODE_ENV=dev nodemon -r esm ../support/app.js -p 8080",
     "test": "../safeplace/node_modules/.bin/mocha --exit --timeout 10000 --require @babel/register --require @babel/polyfill"
   },
   "dependencies": {
