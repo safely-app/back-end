@@ -69,7 +69,7 @@ SafeplaceController.post('/', requestAuth, async (req, res) => {
     safeplaceId: req.body.safeplaceId,
     ownerId: req.body.ownerId,
     name: req.body.name,
-    decription: req.body.decription,
+    description: req.body.decription,
     city: req.body.city,
     address: req.body.address,
     coordinate: req.body.coordinate,
