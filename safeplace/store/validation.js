@@ -4,7 +4,7 @@ export function validateSafeplaceCreation(safeplace) {
   const schema = Joi.object({
     safeplaceId: Joi.string().length(24),
     name: Joi.string() .min(1) .max(50) .required(),
-    decription: Joi.string() .max(500),
+    description: Joi.string() .max(500),
     city: Joi.string() .min(1) .max(50) .required(),
     address: Joi.string() .min(1) .max(200) .required(),
     coordinate: Joi.array().items(Joi.string()) .min(2) .max(3),
