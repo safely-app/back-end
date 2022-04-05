@@ -114,8 +114,13 @@ SafeplaceController.put('/:id', requestAuth, async (req, res) => {
     phone: req.body.phone,
     web: req.body.web
   };
+  
+  console.log(doc);
 
   Object.keys(doc).forEach(key => doc[key] === undefined ? delete doc[key] : {});
+  
+  console.log("apres champs vide");
+  console.log(doc);
 
   Safeplace.findByIdAndUpdate(req.params.id, doc, (err) => {
     if (err)
