@@ -2,7 +2,7 @@ import express from 'express';
 import logger from 'winston';
 import cors from 'cors';
 
-import { userAlgoController } from "./controller";
+import { userAlgoController, costHandler } from "./controller";
 import { config } from "./store/config";
 
 const app = express();
@@ -12,6 +12,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 app.use("/userAlgo", userAlgoController);
+app.use("/cost", costHandler);
 
 let envConfig;
 

@@ -6,3 +6,11 @@ export function ValidateAlgoPost(Target) {
   })
   return schema.validate(Target);
 }
+
+export function ValidateCostPost(Cost) {
+  const schema = Joi.object({
+    event: Joi.string() .required(),
+    campaign: Joi.string() .length(24) .required()
+  })
+  return schema.validate(Cost);
+}

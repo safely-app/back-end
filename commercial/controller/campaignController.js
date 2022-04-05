@@ -20,12 +20,25 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedCampaign = _.pick(target, [
-            '_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
             PickedCampaign.targets = target.targets;
             campaignsMap.push(PickedCampaign);
         });
         res.status(200).send(campaignsMap);
     });
+});
+
+CampaignController.put('/cost/:id', CampaignUserCheck, async (req, res) => {
+    let campaign = await Campaign.findOne({ _id: req.params.id });
+
+    if (campaign) {
+        if (campaign['budgetSpent'] + req.body.cost > campaign['budget'])
+            return res.status(200).json({error: "Your are trying to spend more than the campaign's budget."});
+        campaign['budgetSpent'] += req.body.cost;
+        campaign.save();
+        return res.status(200).json(campaign);
+    } else
+        return res.status(404).json({error: "Campaign not found"});
 });
 
 CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
@@ -36,7 +49,7 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
 
     if (campaign) {
         const PickedCampaign = _.pick(campaign,
-            ['_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
     
         let targetInfos = await new Promise((resolve, reject) => {
             let targetInfos = [];
