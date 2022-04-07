@@ -1,4 +1,4 @@
-import { MarketingTarget, Campaign, Advertising } from "../database/models";
+import { MarketingTarget, Campaign, Advertising, Notifications, Modif } from "../database/models";
 import { config } from "./config";
 import cote from "cote";
 
@@ -88,5 +88,71 @@ export async function AdvertisingOwnerCheck(req, res, next) {
         next();
     } catch {
         return res.status(404).json({error: "Advertising not found"});
+    }
+} 
+
+export async function NotificationsUserCheck(req, res, next) {
+    try {
+        const notifications = await Notifications.findOne({_id: req.params.id});
+        req.middleware_values = notifications
+        req.middleware_values._id = notifications.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(notifications.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Notifications not found"});
+    }
+}
+
+export async function NotificationsOwnerCheck(req, res, next) {
+    try {
+        const notifications = await Notifications.findOne({ownerId: req.params.id});
+        console.log(notifications)
+        req.middleware_values = notifications
+        req.middleware_values._id = notifications.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(notifications.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Notifications not found"});
+    }
+} 
+
+export async function ModifUserCheck(req, res, next) {
+    try {
+        const modif = await Modif.findOne({_id: req.params.id});
+        req.middleware_values = modif
+        req.middleware_values._id = modif.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(modif.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Modif not found"});
+    }
+}
+
+export async function ModifOwnerCheck(req, res, next) {
+    try {
+        const modif = await Modif.findOne({ownerId: req.params.id});
+        console.log(modif)
+        req.middleware_values = modif
+        req.middleware_values._id = modif.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(modif.ownerId, usertoken);
+        if (response.right === "false"|| response.right === "no")
+            return res.status(500).json({ error: response.right});
+        next();
+    } catch {
+        return res.status(404).json({error: "Modif not found"});
     }
 } 
