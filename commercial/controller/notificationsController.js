@@ -53,7 +53,7 @@ NotificationsController.put('/:id', NotificationsUserCheck, async (req, res) => 
     })
 });
 
-NotificationsController.post('/', needToBeLogin, async (req, res) => {
+NotificationsController.post('/', needToBeLogin, needToBeAdmin, async (req, res) => {
     const { error } = validateNotifications(req.body);
 
     if (error)
