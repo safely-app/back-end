@@ -6,16 +6,19 @@ import { validateNotifications, putValidateNotifications } from '../store/valida
 
 export const NotificationsController = express.Router();
 
-NotificationsController.get('/', needToBeAdmin , async (req, res) => {
+NotificationsController.get('/', needToBeLogin, async (req, res) => {
+
     Notifications.find({}, function(err, targets) {
         let notificationsMap = [];
 
         targets.forEach((target) => {
 
             let PickedNotifications = _.pick(target, [
-            '_id', 'ownerId','title','description']);
+                '_id', 'ownerId','title','description']);
             PickedNotifications.targets = target.targets;
-            notificationsMap.push(PickedNotifications);
+            if (PickedNotifications.ownerId === req.middleware_log_response.userId) {
+                notificationsMap.push(PickedNotifications);
+            }
         });
         res.status(200).send(notificationsMap);
     });
