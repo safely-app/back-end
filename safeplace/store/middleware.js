@@ -59,3 +59,17 @@ export async function AuthOrAdmin(req, res, next) {
     return res.status(401).json({error: 'Can\'t proceed to your request'});
   }
 }
+
+export async function AdminOnly(req, res, next) {
+  try {
+    if (req.authResponse) {
+      if (req.authResponse.role === "admin")
+        next();
+      else {
+        return res.status(403).json({error: 'Can\'t proceed to your request'});
+      }
+    }
+  } catch {
+    return res.status(401).json({error: 'Can\'t proceed to your request'});
+  }
+}
