@@ -1,7 +1,7 @@
 import express from 'express';
 import _ from "lodash";
 import { Campaign, MarketingTarget } from '../database/models';
-import { CampaignUserCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
+import { CampaignUserCheck, needToBeAdmin, needToBeLogin, UserCheckOwnerOrAdmin } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
 import cote from "cote";
 import {config} from "../store/config";
@@ -25,6 +25,21 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
             campaignsMap.push(PickedCampaign);
         });
         res.status(200).send(campaignsMap);
+    });
+});
+
+CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) => {
+    Campaign.find({ ownerId: req.params.id }, function(err, targets) {
+        let campaignsMap = [];
+
+        targets.forEach((target) => {
+
+            let PickedCampaign = _.pick(target, [
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
+            PickedCampaign.targets = target.targets;
+            campaignsMap.push(PickedCampaign);
+        });
+        res.status(200).json(campaignsMap);
     });
 });
 
