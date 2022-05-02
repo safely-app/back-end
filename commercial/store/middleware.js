@@ -31,6 +31,17 @@ export async function needToBeAdmin(req, res, next) {
     next();
 }
 
+export async function UserCheckOwnerOrAdmin(req, res, next) {
+    const userId = req.params.id;
+    const usertoken = req.headers.authorization;
+    const response = await ownerOrAdmin(userId, usertoken);
+
+    console.log(response)
+    if (response.right === "false" || response.right === "no")
+        return res.status(403).json({ error: response.right});
+    next();
+}
+
 export async function CampaignUserCheck(req, res, next) {
     const campaign = await Campaign.findOne({_id: req.params.id});
     req.middleware_values = campaign

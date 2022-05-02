@@ -2,12 +2,27 @@ import express from 'express';
 import _ from "lodash";
 import { MarketingTarget } from '../database/models';
 import { validateMarketingTarget, putValidateMarketingTarget } from '../store/validation';
-import { needToBeAdmin, marketingTargetUserCheck, needToBeLogin } from '../store/middleware';
+import { needToBeAdmin, marketingTargetUserCheck, needToBeLogin, UserCheckOwnerOrAdmin } from '../store/middleware';
 
 export const MarketingTargetController = express.Router();
 
 MarketingTargetController.get('/', needToBeAdmin, async (req, res) => {
     MarketingTarget.find({}, function(err, targets) {
+        let targetsMap = [];
+
+        targets.forEach((target) => {
+
+            let PickedMarketingTarget = _.pick(target, [
+            '_id', 'ownerId', 'name', 'csp', 'ageRange']);
+            PickedMarketingTarget.interests = target.interests;
+            targetsMap.push(PickedMarketingTarget);
+        });
+        res.status(200).send(targetsMap);
+    });
+});
+
+MarketingTargetController.get('/owner/:id', UserCheckOwnerOrAdmin, async (req, res) => {
+    MarketingTarget.find({ ownerId: req.params.id }, function(err, targets) {
         let targetsMap = [];
 
         targets.forEach((target) => {
