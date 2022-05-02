@@ -1,7 +1,7 @@
 import express from 'express';
 import { Safeplace, SafeplaceComment } from "../database/models/";
 import { validateSafeplaceCommentCreation, validateSafeplaceCommentModification } from "../store/validation";
-import {AuthOrAdmin, requestAuth, SafeplaceCommentUserCheck} from "../store/middleware";
+import {AdminOnly, AuthOrAdmin, requestAuth, SafeplaceCommentUserCheck} from "../store/middleware";
 
 export const SafeplaceCommentController = express.Router();
 
@@ -9,7 +9,13 @@ SafeplaceCommentController.get("/", requestAuth, async (req, res) => {
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const comments = await SafeplaceComment.find({});
+  let comments = [];
+
+  if (req.authResponse && req.authResponse.role === "admin") {
+    comments = await SafeplaceComment.find({});
+  } else {
+    comments = await SafeplaceComment.find({hasBeenValidated: true});
+  }
 
   if (comments)
     res.status(200).json(comments);
@@ -33,7 +39,13 @@ SafeplaceCommentController.get("/best/:number", requestAuth, async (req, res) =>
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const comments = await SafeplaceComment.find({})
+  let comments = [];
+
+  if (req.authResponse && req.authResponse.role === "admin") {
+    comments = await SafeplaceComment.find({});
+  } else {
+    comments = await SafeplaceComment.find({hasBeenValidated: true});
+  }
 
   comments.sort((a,b) => (a.grade > b.grade) ? -1 : ((b.grade > a.grade) ? 1 : 0));
 
@@ -49,7 +61,16 @@ SafeplaceCommentController.get("/best/:safeplaceId/:number", requestAuth, async 
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const comments = await SafeplaceComment.find({safeplaceId: req.params.safeplaceId})
+  let comments = [];
+
+  if (req.authResponse && req.authResponse.role === "admin") {
+    comments = await SafeplaceComment.find({safeplaceId: req.params.safeplaceId});
+  } else {
+    comments = await SafeplaceComment.find({
+      safeplaceId: req.params.safeplaceId,
+      hasBeenValidated: true
+    });
+  }
 
   comments.sort((a,b) => (a.grade > b.grade) ? -1 : ((b.grade > a.grade) ? 1 : 0));
 
@@ -65,7 +86,13 @@ SafeplaceCommentController.get("/worst/:number", requestAuth, async (req, res) =
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const comments = await SafeplaceComment.find({})
+  let comments = [];
+
+  if (req.authResponse && req.authResponse.role === "admin") {
+    comments = await SafeplaceComment.find({});
+  } else {
+    comments = await SafeplaceComment.find({hasBeenValidated: true});
+  }
 
   comments.sort((a,b) => (a.grade > b.grade) ? 1 : ((b.grade > a.grade) ? -1 : 0));
 
@@ -79,7 +106,16 @@ SafeplaceCommentController.get("/worst/:safeplaceId/:number", requestAuth, async
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const comments = await SafeplaceComment.find({safeplaceId: req.params.safeplaceId})
+  let comments = [];
+
+  if (req.authResponse && req.authResponse.role === "admin") {
+    comments = await SafeplaceComment.find({safeplaceId: req.params.safeplaceId});
+  } else {
+    comments = await SafeplaceComment.find({
+      safeplaceId: req.params.safeplaceId,
+      hasBeenValidated: true
+    });
+  }
 
   comments.sort((a,b) => (a.grade > b.grade) ? 1 : ((b.grade > a.grade) ? -1 : 0));
 
@@ -103,7 +139,8 @@ SafeplaceCommentController.post("/", requestAuth, async (req, res) => {
     userId: req.body.userId,
     safeplaceId: req.body.safeplaceId,
     comment: req.body.comment,
-    grade: req.body.grade
+    grade: req.body.grade,
+    hasBeenValidated: false
   };
 
   Object.keys(comment).forEach(key => comment[key] === undefined ? delete comment[key] : {});
@@ -143,6 +180,21 @@ SafeplaceCommentController.put("/:id", SafeplaceCommentUserCheck, requestAuth, A
     if (err)
       return res.status(403).json({error: 'Update couldn\'t be proceed'})
     return res.status(200).json({success: 'Updated!'})
+  })
+})
+
+SafeplaceCommentController.put("/validate/:id", SafeplaceCommentUserCheck, requestAuth, AdminOnly, async (req, res) => {
+  if (req.authResponse.right === 'false')
+    return res.status(401).json({message: "Unauthorized"})
+
+  const doc = {
+    hasBeenValidated: true
+  };
+
+  SafeplaceComment.findByIdAndUpdate(req.params.id, doc, (err) => {
+    if (err)
+      return res.status(403).json({error: 'Validation couldn\'t be proceed'})
+    return res.status(200).json({success: 'Validated!'})
   })
 })
 
