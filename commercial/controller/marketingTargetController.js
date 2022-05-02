@@ -32,7 +32,7 @@ MarketingTargetController.get('/owner/:id', UserCheckOwnerOrAdmin, async (req, r
             PickedMarketingTarget.interests = target.interests;
             targetsMap.push(PickedMarketingTarget);
         });
-        res.status(200).send(targetsMap);
+        res.status(200).json(targetsMap);
     });
 });
 

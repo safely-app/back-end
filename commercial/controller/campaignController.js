@@ -39,7 +39,7 @@ CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) =>
             PickedCampaign.targets = target.targets;
             campaignsMap.push(PickedCampaign);
         });
-        res.status(200).send(campaignsMap);
+        res.status(200).json(campaignsMap);
     });
 });
 
