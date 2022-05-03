@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import cote from "cote";
 
 import {config} from "./config";
-import {SupportRequest} from "../database/models";
+import {Anomaly, SupportRequest} from "../database/models";
 
 let requester;
 
@@ -36,6 +36,19 @@ export async function SupportUserCheck(req, res, next) {
 
   const usertoken = req.headers.authorization;
   const response = await ownerOrAdmin(support.userId, usertoken);
+  if (response.right === "false" || response.right === "no")
+    return res.status(500).json({ error: response.right});
+  next();
+}
+
+export async function AnomalyUserCheck(req, res, next) {
+  const anomaly = await Anomaly.findOne({_id: req.params.id});
+  req.middleware_values = anomaly
+  req.middleware_values._id = anomaly.userId
+
+  const usertoken = req.headers.authorization;
+  const response = await ownerOrAdmin(anomaly.userId, usertoken);
+
   if (response.right === "false" || response.right === "no")
     return res.status(500).json({ error: response.right});
   next();

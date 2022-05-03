@@ -6,6 +6,7 @@ import cors from 'cors';
 
 import {
   SupportRequestController,
+  AnomalyController
 } from "./controller";
 import { config } from "./store/config";
 
@@ -16,6 +17,7 @@ app.use(express.urlencoded({extended: false, limit: "5mb"}));
 app.use(express.json({limit: "5mb"}));
 
 app.use("/support", SupportRequestController);
+app.use("/anomaly", AnomalyController);
 
 let envConfig;
 

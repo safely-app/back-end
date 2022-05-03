@@ -28,6 +28,7 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
     });
 });
 
+
 CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) => {
     Campaign.find({ ownerId: req.params.id }, function(err, targets) {
         let campaignsMap = [];

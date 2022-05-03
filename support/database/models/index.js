@@ -1,3 +1,4 @@
 import SupportRequest from "./supportRequestModel";
+import Anomaly from "./anomalyModel";
 
-export { SupportRequest };
+export { SupportRequest, Anomaly };
