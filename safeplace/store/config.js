@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 export const config = {
   dev: {
     port: process.env.PORT | 8081,
-    mongoDBUri: 'mongodb+srv://trushy:louis123@safely.volpa.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+    mongoDBUri: 'mongodb://localhost/safely',
     mongoHostName: 'localhost',
     communicationKEY: dotenv.config().parsed.COMMUNICATION_KEY,
     GOOGLE_API_KEY: dotenv.config().parsed.GOOGLE_API_KEY
