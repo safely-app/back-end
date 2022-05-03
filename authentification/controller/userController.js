@@ -40,7 +40,7 @@ UserController.get('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
     if (user) {
         const noPasswordUser = _.pick(user, [
             '_id', 'username','email','role', 'stripeId',
-            'createdAt', 'updatedAt']);
+            'age', 'csp', 'createdAt', 'updatedAt']);
 
         res.send(noPasswordUser);
     } else

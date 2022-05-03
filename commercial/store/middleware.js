@@ -33,6 +33,9 @@ export async function needToBeAdmin(req, res, next) {
 
 export async function CampaignUserCheck(req, res, next) {
     const campaign = await Campaign.findOne({_id: req.params.id});
+
+	if(!campaign)
+		return res.status(500).json({ error: "Campaign not found."});
     req.middleware_values = campaign
     req.middleware_values._id = campaign.ownerId
 
