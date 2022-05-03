@@ -101,6 +101,16 @@ export function validateNearest(safeplace) {
 
 export function validateTraject(traject) {
   const schema = Joi.object( {
+    geocoded_waypoints : Joi.array() .required(),
+    routes : Joi.array() .required(),
+    status : Joi.string().valid("OK") .required()
+  })
+
+  return schema.validate(traject)
+}
+
+export function validateOldTraject(traject) {
+  const schema = Joi.object( {
     coordinates : Joi.array().items(Joi.object({
       latitude: Joi.number() .required(),
       longitude: Joi.number() .required()
