@@ -48,6 +48,7 @@ export async function AnomalyUserCheck(req, res, next) {
 
   const usertoken = req.headers.authorization;
   const response = await ownerOrAdmin(anomaly.userId, usertoken);
+
   if (response.right === "false" || response.right === "no")
     return res.status(500).json({ error: response.right});
   next();

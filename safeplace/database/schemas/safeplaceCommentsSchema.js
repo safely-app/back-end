@@ -16,6 +16,10 @@ const safeplaceCommentSchema = new Schema({
   grade: {
     type: Number,
     required: true
+  },
+  hasBeenValidated: {
+    type: Boolean,
+    required: true
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 

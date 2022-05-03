@@ -6,7 +6,9 @@ import { ProfessionalInfo } from "../database/models";
 import {
     checkJwt,
     ProfessionalInfoUserCheck,
-    AdminOrOwnUser
+    AdminOrOwnUser,
+    ParamsUserCheck,
+    ParamsUserCheckV2
 } from "../store/utils";
 
 const ProfessionalController = express.Router();
@@ -41,6 +43,37 @@ ProfessionalController.get('/' , checkJwt, AdminOrOwnUser, async (req, res) => {
     });
 });
 
+ProfessionalController.get('/owner/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req, res) => {
+    let professional = await ProfessionalInfo.findOne({ userId: req.params.id });
+
+    console.log(req.params.id);
+
+    if (professional) {
+        const PickedProfessional = _.pick(professional, [
+            '_id', 'userId','companyName','companyAddress','companyAddress2',
+            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
+            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+
+        res.send(PickedProfessional);
+    } else
+        res.status(404).json({error: "Professional not found"});
+});
+
+ProfessionalController.get('v2/owner/:id', checkJwt, ParamsUserCheckV2, AdminOrOwnUser, async (req, res) => {
+    const userId = await CryptoJS.enc.Base64.parse(req.params.id).toString(CryptoJS.enc.Utf8);
+    let professional = await ProfessionalInfo.findOne({ userId: userId });
+
+    if (professional) {
+        const PickedProfessional = _.pick(professional, [
+            '_id', 'userId','companyName','companyAddress','companyAddess2',
+            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
+            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+
+        PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
+        res.send(PickedProfessional);
+    } else
+        res.status(404).json({error: "Professional not found"});
+});
 
 ProfessionalController.get('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
     let professional = await ProfessionalInfo.findOne({ _id: req.params.id });

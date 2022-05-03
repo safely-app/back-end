@@ -6,7 +6,7 @@ import {requestAuth, SupportUserCheck} from "../store/middleware";
 export const SupportRequestController = express.Router();
 
 SupportRequestController.get('/', requestAuth, async (req, res) => {
-  if (req.authResponse.role === 'admin')
+  if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
   const support = await SupportRequest.find({});

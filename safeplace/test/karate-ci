@@ -1,0 +1,10 @@
+echo "Starting server with fake prod variables"
+npm start &
+sleep 5
+
+echo "Starting karate"
+cd test/karate/karate-0.9.6 
+./karate
+
+echo "Killing node"
+pkill node
