@@ -3,6 +3,7 @@ import logger from 'winston';
 import cors from 'cors';
 
 import { userAlgoController, costHandler } from "./controller";
+import mongoose from "mongoose";
 import { config } from "./store/config";
 
 const app = express();
@@ -16,13 +17,21 @@ app.use("/cost", costHandler);
 
 let envConfig;
 
-if (process.env.NODE_ENV === 'production')
-  envConfig = config.prod;
+if (process.env.NODE_ENV == 'production')
+    envConfig = config.prod;
 else
-  envConfig = config.dev;
+    envConfig = config.dev;
 
-const { port } = envConfig;
+const { port, mongoDBUri, mongoHostName } = envConfig;
 
 app.listen(port, () => {
   logger.info(`Started successfully server at port ${port}`);
+  mongoose
+      .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
+      .then((res) => {
+        logger.info(`Conneted to mongoDB at ${mongoHostName}`);
+      })
+      .catch((error) => {
+        logger.error(error);
+      });
 });

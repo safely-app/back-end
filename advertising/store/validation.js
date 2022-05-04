@@ -14,3 +14,11 @@ export function ValidateCostPost(Cost) {
   })
   return schema.validate(Cost);
 }
+
+export function ValidateCostEdition(Cost) {
+	const schema = Joi.object({
+	  costType: Joi.string() .required(),
+	  price: Joi.number() .required()
+	})
+	return schema.validate(Cost);
+  }
