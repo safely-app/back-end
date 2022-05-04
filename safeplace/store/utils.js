@@ -4,6 +4,8 @@ import nodemailer from "nodemailer";
 import { config } from "./config";
 import {Safeplace} from "../database/models";
 import fetch from 'node-fetch';
+import {orderByDistance} from "geolib";
+import {func} from "joi";
 
 export async function sendTimetableVerificationEmail(email, id) {
   const transporter = nodemailer.createTransport({
@@ -51,14 +53,40 @@ export async function cutAfterRadius(coordinates, closest, distance) {
 }
 
 export async function calculateMetersWithCoordinates(coordinateA, coordinateB) {
-  const latA = coordinateA.latitude * (Math.PI / 180);
-  const latB = coordinateB.latitude * (Math.PI / 180);
-  const lonA = coordinateA.longitude * (Math.PI / 180);
-  const lonB = coordinateB.longitude * (Math.PI / 180);
+  const latA = coordinateA.lat * (Math.PI / 180);
+  const latB = coordinateB.lat * (Math.PI / 180);
+  const lonA = coordinateA.lng * (Math.PI / 180);
+  const lonB = coordinateB.lng * (Math.PI / 180);
 
   const result = 6372795.477598 * Math.acos(Math.sin(latA) * Math.sin(latB) + Math.cos(latA) * Math.cos(latB) * Math.cos(lonA - lonB));
 
   return Math.round(result);
+}
+
+export async function filterTooFarSafeplaces(location, maxMeters, safeplaces) {
+  let closeEnoughSafeplaces = [];
+  const safeplacesCoordinates = safeplaces.map((safeplace) => {
+    return {lat: safeplace.coordinate[0], lng: safeplace.coordinate[1]};
+  });
+  const closest = orderByDistance(location, safeplacesCoordinates);
+
+  for (const close of closest) {
+    if (await calculateMetersWithCoordinates(location, close) > maxMeters)
+      return closeEnoughSafeplaces;
+    closeEnoughSafeplaces.push(close);
+  }
+
+  return closeEnoughSafeplaces
+}
+
+export async function getMaxMetersOfTrajects(routes) {
+  let maxMeters = 0;
+  for (const route of routes) {
+    if (route.legs[0].distance.value > maxMeters)
+      maxMeters = route.legs[0].distance.value;
+  }
+
+  return maxMeters;
 }
 
 // ######################################################################

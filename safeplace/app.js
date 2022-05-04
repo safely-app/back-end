@@ -47,9 +47,9 @@ app.listen(port, () => {
   mongoose
     .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((res) => {
-      logger.info(`Conneted to mongoDB at ${mongoHostName}`);
+      console.log(`Conneted to mongoDB at ${mongoHostName}`);
     })
     .catch((error) => {
-      logger.error(error);
+      console.error(error);
     });
 });
