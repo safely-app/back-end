@@ -2,7 +2,7 @@ import express from "express";
 import _ from "lodash";
 import CryptoJS from "crypto-js";
 
-import { ProfessionalInfo } from "../database/models";
+import { ProfessionalInfo, User } from "../database/models";
 import {
     checkJwt,
     ProfessionalInfoUserCheck,
@@ -14,6 +14,20 @@ import {
 const ProfessionalController = express.Router();
 
 ProfessionalController.post('/', async (req, res) => {
+
+    const user = await User.findById(req.body.userId);
+
+    if (!user) {
+        return res.status(400).json({ error: "User is unknown" });
+    }
+
+    if (user.role === "user") {
+        const updated = await User.findByIdAndUpdate(user._id, { role: "trader" });
+
+        if (!updated) {
+            return res.status(403).json({ error: "User role update couldn't proceed" });
+        }
+    }
 
     let professional = new ProfessionalInfo(_.pick(req.body, [
         'userId','companyName','companyAddress','companyAddress2',
