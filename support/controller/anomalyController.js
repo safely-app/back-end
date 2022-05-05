@@ -18,7 +18,7 @@ AnomalyController.get('/', requestAuth, async (req, res) => {
 })
 
 AnomalyController.get('/validated', requestAuth, async (req, res) => {
-  if (req.authResponse.role !== 'admin')
+  if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"});
 
   const anomaly = await Anomaly.find({score: {$gt: 1}});
