@@ -89,6 +89,25 @@ export async function getMaxMetersOfTrajects(routes) {
   return maxMeters;
 }
 
+export async function checkAnomalies(step, anomalies) {
+  let splitinstructions = step.html_instructions.split("<b>");
+  splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
+  splitinstructions = await makeVerboseStreet(splitinstructions);
+  
+  let obj = anomalies.find(o => o.street.toLowerCase() === splitinstructions.toLowerCase());
+  if (obj.length > 0)
+    return obj.length;
+  else
+    return 0;
+}
+
+async function makeVerboseStreet(street) {
+  street = street.replace("Pl.", "Place");
+  street = street.replace("Rte", "Route");
+  street = street.replace("Bd", "Boulevard");
+  return street;
+}
+
 // ######################################################################
 // ################### Create OpenStreetMap Safeplace ###################
 // ######################################################################
