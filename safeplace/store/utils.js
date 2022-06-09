@@ -93,10 +93,10 @@ export async function checkAnomalies(step, anomalies) {
   let splitinstructions = step.html_instructions.split("<b>");
   splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
   splitinstructions = await makeVerboseStreet(splitinstructions);
-  
-  let obj = anomalies.find(o => o.street.toLowerCase() === splitinstructions.toLowerCase());
-  if (obj.length > 0)
-    return obj.length;
+
+  let obj = anomalies.find(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]* /, "") === splitinstructions.toLowerCase());
+  if (obj)
+    return 1;
   else
     return 0;
 }
@@ -105,6 +105,7 @@ async function makeVerboseStreet(street) {
   street = street.replace("Pl.", "Place");
   street = street.replace("Rte", "Route");
   street = street.replace("Bd", "Boulevard");
+  street = street.replace("av.", "Avenue");
   return street;
 }
 

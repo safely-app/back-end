@@ -54,13 +54,18 @@ TrajectController.post('/v2',requestAuth, async (req, res) => {
     if (error)
         return res.status(400).json({ error: error.details[0].message});
 
-
     const safeplacesCoordinates = await filterTooFarSafeplaces(req.body.routes[0].legs[0].start_location, await getMaxMetersOfTrajects(req.body.routes), await Safeplace.find());
-    const anomalies = await fetch('https://api.safely-app.fr/support/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
-        .then(response => response.json())
+    let anomalies = await fetch('https://api.safely-app.fr/support/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
     let numberOfSafeplaces = 0;
     let numberOfAnomalies = 0;
     let bestTraject = 0
+
+    if (anomalies.status === 401)
+        return res.status(401).json({message: "Unauthorized"});
+    else if (anomalies.status === 500)
+        return res.status(500).json({message: "Internal server error"});
+    else
+        anomalies = await anomalies.json();
 
     for (let i = 0; req.body.routes[i]; i++) {
         let actualNumberOfSafeplaces = 0;
@@ -82,10 +87,13 @@ TrajectController.post('/v2',requestAuth, async (req, res) => {
                 }
                 actualNumberOfSafeplaces++;
             }
+            // For testing purposes
+            // console.log(step.html_instructions);
+            // console.log(actualNumberOfAnomalies);
         }
     }
 
-    res.status(200).json({index : bestTraject, number_of_safeplaces: numberOfSafeplaces});
+    res.status(200).json({index : bestTraject, number_of_safeplaces: numberOfSafeplaces, number_of_anomalies: numberOfAnomalies});
 })
 
 //actual traject calculation
