@@ -104,8 +104,9 @@ export const sendAdEvent = async (event, campaign, authorization, cost) => {
 };
 
 // Save the history of the received event with its cost.
-export const saveCostHistory = async (data) => {
+export const saveCostHistory = async (data, campaignId) => {
 	const costHistory = {
+		campaignId: campaignId,
 		eventType: data.eventType,
 		userAge: data.userInfo.age,
 		userCsp: data.userInfo.csp,

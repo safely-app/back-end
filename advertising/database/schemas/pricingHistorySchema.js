@@ -1,6 +1,10 @@
 import { Schema } from "mongoose";
 
 const pricingHistorySchema = new Schema({
+    campaignId: {
+        type: String,
+        required: true
+    },
     eventType: {
         type: String,
         required: true
