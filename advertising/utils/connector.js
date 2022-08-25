@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import jwt_decode from "jwt-decode";
 import { config } from '../store/config';
-import { Pricing } from '../database/models';
+import { Pricing, PricingHistory } from '../database/models';
 
 const AgeMatchingPrice = 0.1;
 
@@ -81,6 +81,7 @@ export const computeCost = async (event, campaign, authorization) => {
 	data.totalCost = totalCost;
 	matchingCostObject.total = FinalMatchingCost;
 	data.matchingCost = matchingCostObject;
+	data.userInfo = {age: userInfo.age, csp: userInfo.csp};
 	return await data;
 }
 
@@ -101,3 +102,22 @@ export const sendAdEvent = async (event, campaign, authorization, cost) => {
     const response = await fetch(`${url}${route}`, conf);
     return await response.json();
 };
+
+// Save the history of the received event with its cost.
+export const saveCostHistory = async (data) => {
+	const costHistory = {
+		eventType: data.eventType,
+		userAge: data.userInfo.age,
+		userCsp: data.userInfo.csp,
+		eventCost: data.eventCost,
+		totalCost: data.totalCost,
+		matchingOn: []
+	}
+	if (data.matchingCost.total == 0)
+		costHistory.matchingOn.push('none');
+	else {
+		data.matchingCost.ageRange > 0 ? costHistory.matchingOn.push("age") : null;
+		data.matchingCost.csp > 0 ? costHistory.matchingOn.push("csp") : null;
+	}
+	await PricingHistory.create(costHistory);
+}

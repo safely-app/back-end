@@ -20,7 +20,7 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedCampaign = _.pick(target, [
-            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
             PickedCampaign.targets = target.targets;
             campaignsMap.push(PickedCampaign);
         });
@@ -36,8 +36,23 @@ CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) =>
         targets.forEach((target) => {
 
             let PickedCampaign = _.pick(target, [
-            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
             PickedCampaign.targets = target.targets;
+            campaignsMap.push(PickedCampaign);
+        });
+        res.status(200).json(campaignsMap);
+    });
+});
+
+CampaignController.get('/safeplace/:safeplaceId', UserCheckOwnerOrAdmin , async (req, res) => {
+    Campaign.find({ safeplaceId: req.params.safeplaceId }, function(err, campaigns) {
+        let campaignsMap = [];
+
+        campaigns.forEach((campaign) => {
+
+            let PickedCampaign = _.pick(campaign, [
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
+            PickedCampaign.targets = campaign.targets;
             campaignsMap.push(PickedCampaign);
         });
         res.status(200).json(campaignsMap);
@@ -65,7 +80,7 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
 
     if (campaign) {
         const PickedCampaign = _.pick(campaign,
-            ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate']);
+            ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
     
         let targetInfos = await new Promise((resolve, reject) => {
             let targetInfos = [];
@@ -115,7 +130,7 @@ CampaignController.put('/:id', CampaignUserCheck, async (req, res, next) => {
 CampaignController.copy('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
     let new_campaign = new Campaign(_.pick(campaign,
-        ['ownerId','name','budget', 'status', 'startingDate']));
+        ['ownerId','name','budget', 'status', 'startingDate', 'safeplaceId']));
         
     new_campaign.targets = campaign.targets;
     new_campaign.name = new_campaign.name += " (copy)";
@@ -129,7 +144,7 @@ CampaignController.post('/', needToBeLogin, async (req, res) => {
     if (error)
       return res.status(400).json({ error: error.details[0].message});
     let campaign = new Campaign(_.pick(req.body, [
-        'ownerId','name','budget', 'status', 'startingDate']));
+        'ownerId','name','budget', 'status', 'startingDate', 'safeplaceId']));
     campaign.targets = req.body.targets;
     await campaign.save();
     res.status(201).send(campaign);

@@ -29,7 +29,8 @@ export function putValidateCampaign(campaign) {
     budget: Joi.number(),
     status: Joi.string() .min(1) .max(15),
     startingDate: Joi.date(),
-    targets: Joi.array().items(Joi.string()) .min(0) .max(10)
+    targets: Joi.array().items(Joi.string()) .min(0) .max(10),
+    safeplaceId: Joi.string() .length(24)
   })
   return schema.validate(campaign);
 }
@@ -41,7 +42,8 @@ export function validateCampaign(campaign) {
     budget: Joi.number() .required(),
     status: Joi.string() .min(1) .max(15) .required(),
     startingDate: Joi.date().required(),
-    targets: Joi.array().items(Joi.string()) .min(0) .max(10)
+    targets: Joi.array().items(Joi.string()) .min(0) .max(10),
+    safeplaceId: Joi.string() .length(24)
   })
   return schema.validate(campaign);
 }
