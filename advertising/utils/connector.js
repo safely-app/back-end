@@ -6,11 +6,11 @@ import { Pricing, PricingHistory } from '../database/models';
 const AgeMatchingPrice = 0.1;
 
 const cspCosts = {
-	"csp--": 0,
-	"csp-": 0.01,
-	"csp": 0.05,
-	"csp+": 0.1,
-	"csp++": 0.2
+	"csp--": 0.01,
+	"csp-": 0.02,
+	"csp": 0.06,
+	"csp+": 0.11,
+	"csp++": 0.21
 
 }
 
@@ -63,7 +63,7 @@ export const computeCost = async (event, campaign, authorization) => {
 	campaignInfo.targets.forEach(element => {
 		let matchingCost = 0;
 		const ageRange = element.ageRange.split('-');
-		if (userInfo.age >= ageRange[0] && userInfo.age <= ageRange[1]) {
+		if (parseInt(userInfo.age) >= parseInt(ageRange[0]) && parseInt(userInfo.age) <= parseInt(ageRange[1])) {
 			matchingCost += AgeMatchingPrice;
 			matchingCostObject.ageRange += AgeMatchingPrice;
 		}
@@ -104,10 +104,10 @@ export const sendAdEvent = async (event, campaign, authorization, cost) => {
 };
 
 // Save the history of the received event with its cost.
-export const saveCostHistory = async (data, campaignId) => {
+export const saveCostHistory = async (data, campaignId, event) => {
 	const costHistory = {
 		campaignId: campaignId,
-		eventType: data.eventType,
+		eventType: event,
 		userAge: data.userInfo.age,
 		userCsp: data.userInfo.csp,
 		eventCost: data.eventCost,
