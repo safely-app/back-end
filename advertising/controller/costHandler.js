@@ -1,7 +1,7 @@
 import express from 'express';
-import { Pricing } from '../database/models';
+import { Pricing, PricingHistory } from '../database/models';
 import { ValidateCostEdition, ValidateCostPost } from '../store/validation';
-import { computeCost } from '../utils/connector';
+import { computeCost, saveCostHistory } from '../utils/connector';
 
 export const costHandler = express.Router();
 
@@ -46,6 +46,15 @@ costHandler.put('/', async (req, res) => {
   })
 });
 
+costHandler.get('/history', async (req, res) => {
+	const history = await PricingHistory.find({});
+
+	if (history) {
+		return res.status(200).json(history);
+	} else
+		return res.status(500).json({ error: "No histories found."});
+});
+
 costHandler.post('/event', async (req, res) => {
     const { error } = ValidateCostPost(req.body);
 
@@ -54,6 +63,7 @@ costHandler.post('/event', async (req, res) => {
     const data = await computeCost(req.body.event, req.body.campaign, req.headers.authorization)
     if (data.error)
         return res.status(403).send({error: data.error});
+	await saveCostHistory(data, req.body.campaign, req.body.event);
     return res.status(200).send({
 		message: `${req.body.event} registered.`,
 		matchingCost: data.matchingCost,

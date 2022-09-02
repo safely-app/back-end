@@ -29,6 +29,9 @@ const campaignSchema = new Schema({
   targets: {
     type: [String],
     required: true
+  },
+  safeplaceId: {
+    type: String,
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 
