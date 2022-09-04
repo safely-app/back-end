@@ -65,6 +65,47 @@ export function validateUpdateUser(user) {
   return schema.validate(user);
 }
 
+export function validateProfessionalCreation(professional) {
+  const schema = Joi.object({
+    userId: Joi.string() .min(1) .max(255) .required(),
+    companyName: Joi.string() .min(1) .max(255) .required(),
+    companyAddress: Joi.string() .min(1) .max(255) .required(),
+    companyAddress2: Joi.string() .min(0) .max(255),
+    billingAddress: Joi.string() .min(1) .max(255) .required(),
+    clientNumberTVA: Joi.string() .min(1) .max(255) .required(),
+    personalPhone: Joi.string() .min(0) .max(255),
+    companyPhone: Joi.string() .min(1) .max(255) .required(),
+    RCS: Joi.string() .min(0) .max(255),
+    registrationCity: Joi.string() .min(0) .max(255),
+    SIREN: Joi.string() .min(0) .max(255),
+    SIRET: Joi.string() .min(0) .max(255),
+    artisanNumber: Joi.string() .min(0) .max(255),
+    type: Joi.string() .min(1) .max(255) .required()
+  });
+
+  return schema.validate(professional);
+}
+
+export function validateProfessionalUpdate(professional) {
+  const schema = Joi.object({
+    companyName: Joi.string() .min(1) .max(255),
+    companyAddress: Joi.string() .min(1) .max(255),
+    companyAddress2: Joi.string() .min(0) .max(255),
+    billingAddress: Joi.string() .min(1) .max(255),
+    clientNumberTVA: Joi.string() .min(1) .max(255),
+    personalPhone: Joi.string() .min(0) .max(255),
+    companyPhone: Joi.string() .min(1) .max(255),
+    RCS: Joi.string() .min(0) .max(255),
+    registrationCity: Joi.string() .min(0) .max(255),
+    SIREN: Joi.string() .min(0) .max(255),
+    SIRET: Joi.string() .min(0) .max(255),
+    artisanNumber: Joi.string() .min(0) .max(255),
+    type: Joi.string() .min(1) .max(255)
+  });
+
+  return schema.validate(professional);
+}
+
 export async function ParamsUserCheck(req, res, next) {
   req.middleware_values = req.params;
   req.middleware_values._id = req.params.id;

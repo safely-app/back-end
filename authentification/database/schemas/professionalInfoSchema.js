@@ -14,8 +14,7 @@ const professionalInfoSchema = new Schema({
     required: true
   },
   companyAddress2: {
-    type: String,
-    required: true
+    type: String
   },
   billingAddress: {
     type: String,
