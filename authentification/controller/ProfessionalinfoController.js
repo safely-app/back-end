@@ -8,12 +8,18 @@ import {
     ProfessionalInfoUserCheck,
     AdminOrOwnUser,
     ParamsUserCheck,
-    ParamsUserCheckV2
+    ParamsUserCheckV2,
+    validateProfessionalCreation,
+    validateProfessionalUpdate
 } from "../store/utils";
 
 const ProfessionalController = express.Router();
 
 ProfessionalController.post('/', async (req, res) => {
+    const { error } = validateProfessionalCreation(req.body);
+
+    if (error)
+      return res.status(400).json({ error: error.details[0].message});
 
     const user = await User.findById(req.body.userId);
 
@@ -30,25 +36,25 @@ ProfessionalController.post('/', async (req, res) => {
     }
 
     let professional = new ProfessionalInfo(_.pick(req.body, [
-        'userId','companyName','companyAddress','companyAddress2',
-        'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-        'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']));
+        'userId', 'companyName', 'companyAddress', 'companyAddress2',
+        'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+        'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']));
 
     await professional.save();
     professional.hashedId = await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
     res.status(201).send(professional);
 });
 
-ProfessionalController.get('/' , checkJwt, AdminOrOwnUser, async (req, res) => {
-    ProfessionalInfo.find({}, function(err, professional) {
+ProfessionalController.get('/', checkJwt, AdminOrOwnUser, async (req, res) => {
+    ProfessionalInfo.find({}, function (err, professional) {
         let professionalMap = [];
 
         professional.forEach((professional) => {
 
             const PickedProfessional = _.pick(professional, [
-                '_id', 'userId','companyName','companyAddress','companyAddress2',
-                'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-                'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+                '_id', 'userId', 'companyName', 'companyAddress', 'companyAddress2',
+                'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+                'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
             PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
             professionalMap.push(PickedProfessional);
@@ -64,13 +70,13 @@ ProfessionalController.get('/owner/:id', checkJwt, ParamsUserCheck, AdminOrOwnUs
 
     if (professional) {
         const PickedProfessional = _.pick(professional, [
-            '_id', 'userId','companyName','companyAddress','companyAddress2',
-            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+            '_id', 'userId', 'companyName', 'companyAddress', 'companyAddress2',
+            'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+            'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
         res.send(PickedProfessional);
     } else
-        res.status(404).json({error: "Professional not found"});
+        res.status(404).json({ error: "Professional not found" });
 });
 
 ProfessionalController.get('v2/owner/:id', checkJwt, ParamsUserCheckV2, AdminOrOwnUser, async (req, res) => {
@@ -79,14 +85,14 @@ ProfessionalController.get('v2/owner/:id', checkJwt, ParamsUserCheckV2, AdminOrO
 
     if (professional) {
         const PickedProfessional = _.pick(professional, [
-            '_id', 'userId','companyName','companyAddress','companyAddess2',
-            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+            '_id', 'userId', 'companyName', 'companyAddress', 'companyAddess2',
+            'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+            'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
         PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
         res.send(PickedProfessional);
     } else
-        res.status(404).json({error: "Professional not found"});
+        res.status(404).json({ error: "Professional not found" });
 });
 
 ProfessionalController.get('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
@@ -94,13 +100,13 @@ ProfessionalController.get('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
 
     if (professional) {
         const PickedProfessional = _.pick(professional, [
-            '_id', 'userId','companyName','companyAddress','companyAddress2',
-            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
-    
+            '_id', 'userId', 'companyName', 'companyAddress', 'companyAddress2',
+            'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+            'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
+
         res.send(PickedProfessional);
     } else
-        res.status(404).json({error: "Professional not found"});
+        res.status(404).json({ error: "Professional not found" });
 });
 
 ProfessionalController.get('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
@@ -109,26 +115,31 @@ ProfessionalController.get('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
 
     if (professional) {
         const PickedProfessional = _.pick(professional, [
-            '_id', 'userId','companyName','companyAddress','companyAddess2',
-            'billingAddress','clientNumberTVA','personalPhone','companyPhone',
-            'RCS','registrationCity','SIREN','SIRET','artisanNumber','type']);
+            '_id', 'userId', 'companyName', 'companyAddress', 'companyAddess2',
+            'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
+            'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
         PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
         res.send(PickedProfessional);
     } else
-        res.status(404).json({error: "Professional not found"});
+        res.status(404).json({ error: "Professional not found" });
 });
 
 ProfessionalController.put('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
+    const { error } = validateProfessionalUpdate(req.body);
+
+    if (error)
+      return res.status(400).json({ error: error.details[0].message});
+
     const newBody = req.body;
 
     if (newBody._id)
         delete newBody._id
-    
+
     ProfessionalInfo.findByIdAndUpdate(req.params.id, newBody, (err) => {
         if (err)
-            return res.status(403).json({error: 'Update couldn\'t be proceed'})
-        return res.status(200).json({success: 'Updated!'})
+            return res.status(403).json({ error: 'Update couldn\'t be proceed' })
+        return res.status(200).json({ success: 'Updated!' })
     })
 });
 
@@ -141,31 +152,31 @@ ProfessionalController.put('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
 
     ProfessionalInfo.findByIdAndUpdate(professionalId, newBody, (err) => {
         if (err)
-            return res.status(403).json({error: 'Update couldn\'t be proceed'})
-        return res.status(200).json({success: 'Updated!'})
+            return res.status(403).json({ error: 'Update couldn\'t be proceed' })
+        return res.status(200).json({ success: 'Updated!' })
     })
 });
 
 ProfessionalController.delete('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
-      ProfessionalInfo.deleteOne({_id: req.params.id})
-        .then(()=> {
-          res.status(200).json({ message: 'Professional deleted !' });
+    ProfessionalInfo.deleteOne({ _id: req.params.id })
+        .then(() => {
+            res.status(200).json({ message: 'Professional deleted !' });
         })
-        .catch( (error) => {
-          res.status(400).json({ error: error });
+        .catch((error) => {
+            res.status(400).json({ error: error });
         });
 });
 
 ProfessionalController.delete('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
     const professionalId = await CryptoJS.enc.Base64.parse(req.params.id).toString(CryptoJS.enc.Utf8);
 
-    ProfessionalInfo.deleteOne({_id: professionalId})
-      .then(()=> {
-          res.status(200).json({ message: 'Professional deleted !' });
-      })
-      .catch( (error) => {
-          res.status(400).json({ error: error });
-      });
+    ProfessionalInfo.deleteOne({ _id: professionalId })
+        .then(() => {
+            res.status(200).json({ message: 'Professional deleted !' });
+        })
+        .catch((error) => {
+            res.status(400).json({ error: error });
+        });
 });
 
 export default ProfessionalController;

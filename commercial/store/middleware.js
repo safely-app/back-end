@@ -28,7 +28,7 @@ export async function needToBeAdmin(req, res, next) {
     const response = await requester.send(request);
     console.log(request, response)
     if (response.right === "false" || response.right === "no")
-        return res.status(500).json({ error: response.right});
+        return res.status(401).json({ error: "Unauthorized"});
     next();
 }
 
@@ -39,7 +39,7 @@ export async function UserCheckOwnerOrAdmin(req, res, next) {
 
     console.log(response)
     if (response.right === "false" || response.right === "no")
-        return res.status(403).json({ error: response.right});
+        return res.status(401).json({ error: "Unauthorized"});
     next();
 }
 
@@ -57,7 +57,7 @@ export async function CampaignUserCheck(req, res, next) {
     console.log(campaign.ownerId, usertoken)
     console.log(response)
     if (response.right === "false" || response.right === "no")
-        return res.status(500).json({ error: response.right});
+        return res.status(401).json({ error: "Unauthorized"});
     next();
 } 
 
