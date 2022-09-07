@@ -6,6 +6,8 @@ import { userAlgoController, costHandler } from "./controller";
 import mongoose from "mongoose";
 import { config } from "./store/config";
 
+require('winston-mongodb').MongoDB;
+
 const app = express();
 
 app.use(cors());
@@ -24,14 +26,31 @@ else
 
 const { port, mongoDBUri, mongoHostName } = envConfig;
 
+const log = {
+  cnsl: logger.createLogger({
+    level: 'info',
+    format: logger.format.simple(),
+    transports: [new logger.transports.Console({level: "info", colorize: true})],
+  }),
+
+  db: logger.createLogger({
+    level: 'info',
+    format: logger.format.json(),
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'log', level: 'info'})],
+  })
+};
+
+app.locals.log = log;
+
 app.listen(port, () => {
-  logger.info(`Started successfully server at port ${port}`);
+  log.db.info(`Started successfully server at port ${port}`);
+  log.cnsl.info(`Started successfully server at port ${port}`);
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        logger.info(`Conneted to mongoDB at ${mongoHostName}`);
+        log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
       })
       .catch((error) => {
-        logger.error(error);
+        log.cnsl.error(error);
       });
 });
