@@ -60,7 +60,7 @@ export const computeCost = async (event, campaign, authorization) => {
 	let userInfo = await getuserTarget(authorization);
 	let FinalMatchingCost = 0;
 	let matchingCostObject = {ageRange: 0, csp: 0, total: 0}
-	if (campaignInfo && targets) {
+	if (campaignInfo && campaignInfo.targets) {
 		campaignInfo.targets.forEach(element => {
 			let matchingCost = 0;
 			const ageRange = element.ageRange.split('-');
