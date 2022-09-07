@@ -137,6 +137,7 @@ export async function AdminOrOwnUser(req, res, next) {
       let user = await User.findOne({_id: decoded._id});
 
       if (user && (user.role === "admin" || user.id === String(req.middleware_values._id))) {
+        req.userId = user.id;
         next();
       } else {
         return res.status(403).json({error: 'You are not allowed to perform this action '});
