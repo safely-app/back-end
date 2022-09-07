@@ -2,6 +2,8 @@ import express from 'express';
 import logger from 'winston';
 import cors from 'cors';
 
+require('winston-mongodb').MongoDB;
+
 import {StripeController} from "./controller";
 import { config } from "./store/config";
 
@@ -20,8 +22,25 @@ if (process.env.NODE_ENV === 'production')
 else
   envConfig = config.dev;
 
-const { port } = envConfig;
+const { port, COMMUNICATION_KEY, mongoDBUri } = envConfig;
+
+const log = {
+  cnsl: logger.createLogger({
+    level: 'info',
+    format: logger.format.simple(),
+    transports: [new logger.transports.Console({level: "info", colorize: true})],
+  }),
+
+  db: logger.createLogger({
+    level: 'info',
+    format: logger.format.json(),
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'log', level: 'info'})],
+  })
+};
+
+app.locals.log = log;
 
 app.listen(port, () => {
-  logger.info(`Started successfully server at port ${port}`);
+  log.db.info(`Stripe Started successfully server at port ${port}`);
+  log.cnsl.info(`Started successfully server at port ${port}`);
 });

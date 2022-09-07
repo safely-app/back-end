@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
 
+require('winston-mongodb').MongoDB;
+
 import {CampaignController, MarketingTargetController, AdvertisingController, NotificationsController, ModifController} from "./controller/";
 import { config } from "./store/config";
 
@@ -25,16 +27,35 @@ if (process.env.NODE_ENV === 'production')
 else
   envConfig = config.dev;
 
-const { port, mongoDBUri, mongoHostName } = envConfig;
+const { port, mongoDBUri, mongoDBUriLog, mongoHostName } = envConfig;
+
+const log = {
+  cnsl: logger.createLogger({
+    level: 'info',
+    format: logger.format.simple(),
+    transports: [new logger.transports.Console({level: "info", colorize: true})],
+  }),
+
+  db: logger.createLogger({
+    level: 'info',
+    format: logger.format.json(),
+    transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'log', level: 'info'})],
+  })
+};
+
+app.locals.log = log;
 
 app.listen(port, () => {
-  logger.info(`Started successfully server at port ${port}`);
+  log.db.info(`Commercial Started successfully server at port ${port}`);
+  log.cnsl.info(`Started successfully server at port ${port}`);
   mongoose
     .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((res) => {
-      logger.info(`Conneted to mongoDB at ${mongoHostName}`);
+      log.db.info(`Commercial Conneted to mongoDB at ${mongoHostName}`);
+      log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
     })
     .catch((error) => {
-      logger.error(error);
+      log.db.error(`Commercial`, error);
+      log.cnsl.error(error);
     });
 });

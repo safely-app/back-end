@@ -22,7 +22,8 @@
     "nodemon": "^2.0.7",
     "pbf2json": "^6.6.0",
     "through2": "^3.0.2",
-    "winston": "^3.3.3"
+    "winston": "^3.8.1",
+    "winston-mongodb": "^5.0.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.5",

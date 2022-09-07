@@ -43,14 +43,16 @@ const log = {
 app.locals.log = log;
 
 app.listen(port, () => {
-  log.db.info(`Started successfully server at port ${port}`);
+  log.db.info(`Advertising Started successfully server at port ${port}`);
   log.cnsl.info(`Started successfully server at port ${port}`);
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
+        log.db.info(`Advertising Conneted to mongoDB at ${mongoHostName}`);
+        log.cnsl.info(`Advertising  Conneted to mongoDB at ${mongoHostName}`);
       })
       .catch((error) => {
-        log.cnsl.error(error);
+        log.db.info(`Advertising `, error);
+        log.cnsl.error(`Advertising `, error);
       });
 });
