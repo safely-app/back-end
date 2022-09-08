@@ -33,6 +33,18 @@ AdvertisingController.get('/:id', AdvertisingUserCheck, async (req, res) => {
         res.status(404).json({error: "Advertising not found"});
 });
 
+AdvertisingController.get('/:ownerId', UserCheckOwnerOrAdmin , async (req, res) => {
+    let advertising = await Advertising.findOne({ ownerId: req.params.ownerId });
+
+    if (advertising) {
+        const PickedAdvertising = _.pick(advertising, [
+            '_id', 'ownerId','title','description', 'imageUrl', 'targetType']);
+    
+        res.send(PickedAdvertising);
+    } else
+        res.status(404).json({error: "Advertising not found"});
+});
+
 AdvertisingController.put('/:id', AdvertisingUserCheck, async (req, res) => {
     const { error } = putValidateAdvertising(req.body);
 
