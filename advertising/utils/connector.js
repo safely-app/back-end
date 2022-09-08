@@ -60,20 +60,22 @@ export const computeCost = async (event, campaign, authorization) => {
 	let userInfo = await getuserTarget(authorization);
 	let FinalMatchingCost = 0;
 	let matchingCostObject = {ageRange: 0, csp: 0, total: 0}
-	campaignInfo.targets.forEach(element => {
-		let matchingCost = 0;
-		const ageRange = element.ageRange.split('-');
-		if (parseInt(userInfo.age) >= parseInt(ageRange[0]) && parseInt(userInfo.age) <= parseInt(ageRange[1])) {
-			matchingCost += AgeMatchingPrice;
-			matchingCostObject.ageRange += AgeMatchingPrice;
-		}
-		if (userInfo.csp == element.csp) {
-			matchingCost += cspCosts[element.csp];
-			matchingCostObject.csp += cspCosts[element.csp];
-		}
-		if (matchingCost > FinalMatchingCost)
-			FinalMatchingCost = Number.parseFloat(matchingCost.toFixed(2));
-	});
+	if (campaignInfo && campaignInfo.targets) {
+		campaignInfo.targets.forEach(element => {
+			let matchingCost = 0;
+			const ageRange = element.ageRange.split('-');
+			if (parseInt(userInfo.age) >= parseInt(ageRange[0]) && parseInt(userInfo.age) <= parseInt(ageRange[1])) {
+				matchingCost += AgeMatchingPrice;
+				matchingCostObject.ageRange += AgeMatchingPrice;
+			}
+			if (userInfo.csp == element.csp) {
+				matchingCost += cspCosts[element.csp];
+				matchingCostObject.csp += cspCosts[element.csp];
+			}
+			if (matchingCost > FinalMatchingCost)
+				FinalMatchingCost = Number.parseFloat(matchingCost.toFixed(2));
+		});
+	}
 	let totalCost = cost.price + FinalMatchingCost;
 	let data = await sendAdEvent(event, campaign, authorization, totalCost);
 	data.eventCost = cost.price;
