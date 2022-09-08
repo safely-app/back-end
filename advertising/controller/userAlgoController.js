@@ -10,8 +10,10 @@ export const userAlgoController = express.Router();
 userAlgoController.post('/', async (req, res) => {
     const { error } = ValidateAlgoPost(req.body);
 
-    if (error)
-      return res.status(400).json({ error: error.details[0].message});
+    if (error) {
+        req.app.locals.log.db.error(`UserAlgo post/ `, error.details[0].message);
+        return res.status(400).json({ error: error.details[0].message});
+    }
     
       try {
         const targetList = await fetch('https://api.safely-app.fr/commercial/target/', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
@@ -34,8 +36,10 @@ userAlgoController.post('/', async (req, res) => {
             if (userFile[i].age >= parseInt(ages[0]) && userFile[i].age <= parseInt(ages[1]) && userFile[i].csp === target.csp)
                 userList.push(userFile[i]);
         }
+        req.app.locals.log.db.info(`UserAlgo post/ sended`);
         res.status(201).send(userList);
     } catch (error) {
+        req.app.locals.log.db.error(`UserAlgo post/ `, error);
         res.status(403).send(error);
 }
 });
