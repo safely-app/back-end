@@ -6,7 +6,7 @@ import { userAlgoController, costHandler } from "./controller";
 import mongoose from "mongoose";
 import { config } from "./store/config";
 
-require('winston-mongodb').MongoDB;
+import 'winston-mongodb';
 
 const app = express();
 

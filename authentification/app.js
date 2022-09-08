@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 import cors from 'cors';
 import shell from 'shelljs';
 
-require('winston-mongodb').MongoDB;
+import 'winston-mongodb';
 
 import { LoginController, RegisterController, UserController, ProfessionalinfoController } from "./controller";
 import { config } from "./store/config";

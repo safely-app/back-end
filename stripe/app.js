@@ -2,7 +2,7 @@ import express from 'express';
 import logger from 'winston';
 import cors from 'cors';
 
-require('winston-mongodb').MongoDB;
+import 'winston-mongodb';
 
 import {StripeController} from "./controller";
 import { config } from "./store/config";

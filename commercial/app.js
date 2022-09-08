@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
 
-require('winston-mongodb').MongoDB;
+import 'winston-mongodb';
 
 import {CampaignController, MarketingTargetController, AdvertisingController, NotificationsController, ModifController} from "./controller/";
 import { config } from "./store/config";
