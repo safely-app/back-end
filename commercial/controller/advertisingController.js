@@ -33,7 +33,7 @@ AdvertisingController.get('/:id', AdvertisingUserCheck, async (req, res) => {
         res.status(404).json({error: "Advertising not found"});
 });
 
-AdvertisingController.get('/owner/:ownerId', AdvertisingUserCheck , async (req, res) => {
+AdvertisingController.get('/owner/:ownerId', AdvertisingOwnerCheck , async (req, res) => {
     let advertising = await Advertising.findOne({ ownerId: req.params.ownerId });
 
     if (advertising) {
