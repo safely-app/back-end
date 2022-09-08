@@ -7,7 +7,8 @@ import 'winston-mongodb';
 
 import {
   SupportRequestController,
-  AnomalyController
+  AnomalyController,
+  LogController
 } from "./controller";
 import { config } from "./store/config";
 
@@ -19,6 +20,7 @@ app.use(express.json({limit: "5mb"}));
 
 app.use("/support", SupportRequestController);
 app.use("/anomaly", AnomalyController);
+app.use("/log", LogController);
 
 let envConfig;
 
@@ -39,7 +41,7 @@ const log = {
   db: logger.createLogger({
     level: 'info',
     format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'log', level: 'info'})],
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'logs', level: 'info'})],
   })
 };
 

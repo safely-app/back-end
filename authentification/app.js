@@ -83,7 +83,7 @@ const log = {
   db: logger.createLogger({
     level: 'info',
     format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'log', level: 'info'})],
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'logs', level: 'info'})],
   })
 };
 
