@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
 
+import 'winston-mongodb';
 
 import {
   SafeplaceController,
@@ -42,14 +43,33 @@ else
 
 const { port, mongoDBUri, mongoHostName } = envConfig;
 
+const log = {
+  cnsl: logger.createLogger({
+    level: 'info',
+    format: logger.format.simple(),
+    transports: [new logger.transports.Console({level: "info", colorize: true})],
+  }),
+
+  db: logger.createLogger({
+    level: 'info',
+    format: logger.format.json(),
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'logs', level: 'info'})],
+  })
+};
+
+app.locals.log = log;
+
 app.listen(port, () => {
-  logger.info(`Started successfully server at port ${port}`);
+  log.db.info(`Safeplace Started successfully server at port ${port}`);
+  log.cnsl.info(`Started successfully server at port ${port}`);
   mongoose
     .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((res) => {
-      console.log(`Conneted to mongoDB at ${mongoHostName}`);
+      log.db.info(`Safeplace Conneted to mongoDB at ${mongoHostName}`);
+      log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
     })
     .catch((error) => {
-      console.error(error);
+      log.db.error(`Safeplace`, error);
+      log.cnsl.error(error);
     });
 });
