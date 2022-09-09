@@ -24,9 +24,13 @@ export async function requestAuth(req, res, next) {
   });
 }
 
-async function ownerOrAdmin(ownerId, jwt) {
+export async function ownerOrAdmin(ownerId, jwt) {
+  console.log("HIHI");
   const request = { type: 'owner or admin', ownerId: ownerId, jwt: jwt};
-  return await requester.send(request);
+  console.log("HIHI2");
+  let aa = await requester.send(request)
+  console.log("KJKJ")
+  return aa;
 }
 
 export async function SupportUserCheck(req, res, next) {
