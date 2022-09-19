@@ -89,7 +89,8 @@ app.listen(port, () => {
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        log.db.info(`Authentification Conneted to mongoDB at ${mongoHostName}`);
+        log.db.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`);
+        log.db.info(`Connection to logs as ${mongoDBUriLog}`);
       })
       .catch((error) => {
         log.db.error(`Authentification`, error);
