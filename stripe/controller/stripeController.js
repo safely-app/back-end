@@ -81,6 +81,22 @@ StripeController.post('/cardLink', requestAuth, async (req, res) => {
   }
 });
 
+StripeController.post('/cardDeLink', requestAuth, async (req, res) => {
+  try {
+    const { error } = validateStripeLinkCard(req.body);
+
+    if (error)
+      return res.status(400).json({ error: error.details[0].message});
+    const userInfo = await stripeUserInfo(req.headers.authorization);
+    const paymentMethod = await Stripe.paymentMethods.detach(
+        req.body.cardId,
+      );
+    res.status(201).json({message: 'Detach card from stripe success'});
+  } catch (error) {
+    return res.status(403).json({error: error});
+  }
+});
+
 StripeController.get('/user/card/:id', requestAuth, async (req, res) => {
   try {
     const cards = await Stripe.paymentMethods.list({
