@@ -47,7 +47,7 @@ if (process.env.NODE_ENV == 'production')
 else
     envConfig = config.dev;
 
-const { port, mongoDBUri, mongoHostName } = envConfig;
+const { port, mongoDBUri, mongoDBUriLog, mongoHostName } = envConfig;
 
 app.get('/', (req, res) => {
   shell.exec('git rev-parse HEAD', (err, stdout, stderr) => {
@@ -74,16 +74,11 @@ app.get('/', (req, res) => {
 });
 
 const log = {
-  cnsl: logger.createLogger({
-    level: 'info',
-    format: logger.format.simple(),
-    transports: [new logger.transports.Console({level: "info", colorize: true})],
-  }),
-
   db: logger.createLogger({
     level: 'info',
     format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'log', level: 'info'})],
+    transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'}),
+    new logger.transports.Console({level: "info", colorize: true})],
   })
 };
 
@@ -91,15 +86,12 @@ app.locals.log = log;
 
 app.listen(port, () => {
   log.db.info(`Authentification Started successfully server at port ${port}`);
-  log.cnsl.info(`Started successfully server at port ${port}`);
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
         log.db.info(`Authentification Conneted to mongoDB at ${mongoHostName}`);
-        log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
       })
       .catch((error) => {
         log.db.error(`Authentification`, error);
-        log.cnsl.error(error);
       });
 });

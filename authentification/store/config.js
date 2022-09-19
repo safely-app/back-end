@@ -5,6 +5,7 @@ export const config = {
     dev: {
         port: process.env.PORT | 8080,
         mongoDBUri: 'mongodb://localhost/safely',
+        mongoDBUriLog: 'mongodb://localhost/safely',
         mongoHostName: 'localhost',
         privateKEY: fs.readFileSync('./store/private.key'),
         publicKEY: fs.readFileSync('./store/public.key'),
@@ -13,6 +14,7 @@ export const config = {
     prod: {
         port: process.env.PORT | 8080,
         mongoDBUri: process.env.DB_URL,
+        mongoDBUriLog: 'mongodb://localhost/safely',
         mongoHostName: 'Production',
         privateKEY: fs.readFileSync('./store/private.key'),
         publicKEY: fs.readFileSync('./store/public.key'),
