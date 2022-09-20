@@ -46,7 +46,7 @@ ProfessionalController.post('/', async (req, res) => {
 
     await professional.save();
     professional.hashedId = await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
-    req.app.locals.log.db.info(`ProfessionalInfo Post/, ${user._id}'s professional info created`);
+    req.app.locals.log.info(`ProfessionalInfo Post/, ${user._id}'s professional info created`);
     res.status(201).send(professional);
 });
 
@@ -65,7 +65,7 @@ ProfessionalController.get('/', checkJwt, AdminOrOwnUser, async (req, res) => {
             professionalMap.push(PickedProfessional);
         });
         if (professionalMap.length > 0) {
-            req.app.locals.log.db.info(`"ProfessionalInfo Get/", ${professionalMap[0].userId} get his professional infos`);
+            req.app.locals.log.info(`"ProfessionalInfo Get/", ${professionalMap[0].userId} get his professional infos`);
         }
         res.status(200).send(professionalMap);
     });
@@ -81,7 +81,7 @@ ProfessionalController.get('/owner/:id', checkJwt, ParamsUserCheck, AdminOrOwnUs
             '_id', 'userId', 'companyName', 'companyAddress', 'companyAddress2',
             'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
             'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
-        req.app.locals.log.db.info(`"ProfessionalInfo Get/owner/:id", ${PickedProfessional.userId} get his professional infos`);
+        req.app.locals.log.info(`"ProfessionalInfo Get/owner/:id", ${PickedProfessional.userId} get his professional infos`);
         res.send(PickedProfessional);
     } else {
         req.app.locals.log.db.error(`ProfessionalInfo Get/owner/:id, couldn't get his professional infos`);
@@ -98,7 +98,7 @@ ProfessionalController.get('v2/owner/:id', checkJwt, ParamsUserCheckV2, AdminOrO
             '_id', 'userId', 'companyName', 'companyAddress', 'companyAddess2',
             'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
             'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
-        req.app.locals.log.db.info(`"ProfessionalInfo Get v2/owner/:id", ${PickedProfessional.userId} get his professional infos`);
+        req.app.locals.log.info(`"ProfessionalInfo Get v2/owner/:id", ${PickedProfessional.userId} get his professional infos`);
 
         PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
         res.send(PickedProfessional);
@@ -117,7 +117,7 @@ ProfessionalController.get('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
             'billingAddress', 'clientNumberTVA', 'personalPhone', 'companyPhone',
             'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
-        req.app.locals.log.db.info(`"ProfessionalInfo Get/:id", ${PickedProfessional.userId} get his professional infos`);
+        req.app.locals.log.info(`"ProfessionalInfo Get/:id", ${PickedProfessional.userId} get his professional infos`);
         res.send(PickedProfessional);
     } else {
         req.app.locals.log.db.error(`"ProfessionalInfo Get/:id", couldn't get his professional infos`);
@@ -136,7 +136,7 @@ ProfessionalController.get('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
             'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
 
         PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
-        req.app.locals.log.db.info(`"ProfessionalInfo Get v2/:id", ${PickedProfessional.userId} get his professional infos`);
+        req.app.locals.log.info(`"ProfessionalInfo Get v2/:id", ${PickedProfessional.userId} get his professional infos`);
         res.send(PickedProfessional);
     } else {
         req.app.locals.log.db.error(`"ProfessionalInfo Get v2/:id", couldn't get his professional infos`);
@@ -162,7 +162,7 @@ ProfessionalController.put('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
             req.app.locals.log.db.error(`"ProfessionalInfo Put/:id", ${req.params.id}'Update couldn\'t be proceed' `);
             return res.status(403).json({ error: 'Update couldn\'t be proceed' })
         }
-        req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Updated ! `);
+        req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Updated ! `);
         return res.status(200).json({ success: 'Updated!' })
     })
 });
@@ -176,10 +176,10 @@ ProfessionalController.put('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
 
     ProfessionalInfo.findByIdAndUpdate(professionalId, newBody, (err) => {
         if (err) {
-            req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Update couldn\'t be proceed' `);
+            req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Update couldn\'t be proceed' `);
             return res.status(403).json({ error: 'Update couldn\'t be proceed' })
         }
-        req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Update couldn\'t be proceed' `);
+        req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id}'Update couldn\'t be proceed' `);
         return res.status(200).json({ success: 'Updated!' })
     })
 });
@@ -187,11 +187,11 @@ ProfessionalController.put('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
 ProfessionalController.delete('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrOwnUser, async (req, res) => {
     ProfessionalInfo.deleteOne({ _id: req.params.id })
         .then(() => {
-            req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id} 'Professional deleted !' `);
+            req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id} 'Professional deleted !' `);
             res.status(200).json({ message: 'Professional deleted !' });
         })
         .catch((error) => {
-            req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id} ${error} `);
+            req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id} ${error} `);
             res.status(400).json({ error: error });
         });
 });
@@ -201,11 +201,11 @@ ProfessionalController.delete('v2/:id', checkJwt, ProfessionalInfoUserCheck, Adm
 
     ProfessionalInfo.deleteOne({ _id: professionalId })
         .then(() => {
-            req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id} 'Professional deleted !' `);
+            req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id} 'Professional deleted !' `);
             res.status(200).json({ message: 'Professional deleted !' });
         })
         .catch((error) => {
-            req.app.locals.log.db.info(`"ProfessionalInfo Put/:id", ${req.params.id} ${error} `);
+            req.app.locals.log.info(`"ProfessionalInfo Put/:id", ${req.params.id} ${error} `);
             res.status(400).json({ error: error });
         });
 });

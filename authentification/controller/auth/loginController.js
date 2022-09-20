@@ -32,7 +32,7 @@ LoginController.post('/login', async (req, res) => {
     let returnValues = _.pick(user, ['_id', 'email', 'token']);
     returnValues.hashedId =  await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
 
-    req.app.locals.log.db.info(`Logged as ${returnValues._id}`);
+    req.app.locals.log.info(`Logged as ${returnValues._id}`);
     res.status(200).send(returnValues);
 });
 

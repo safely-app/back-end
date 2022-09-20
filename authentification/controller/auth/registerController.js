@@ -34,7 +34,7 @@ RegisterController.post('/register', async (req, res) => {
         let returnValues = _.pick(user, ['_id', 'username', 'email', 'token']);
         returnValues.hashedId =  await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
 
-        req.app.locals.log.db.info(`User ${returnValues._id} has registered`);
+        req.app.locals.log.info(`User ${returnValues._id} has registered`);
         res.status(201).send(returnValues);
     }
 });

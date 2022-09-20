@@ -73,24 +73,23 @@ app.get('/', (req, res) => {
   });
 });
 
-const log = {
-  db: logger.createLogger({
-    level: 'info',
-    format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'}),
-    new logger.transports.Console({level: "info", colorize: true})],
-  })
-};
+const log = logger.createLogger({
+  level: 'info',
+  format: logger.format.json(),
+  transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'}), new logger.transports.Console({level: "info", colorize: true})],
+});
+
+// console.log("AAAAA = ", log.db.transports[0]);
 
 app.locals.log = log;
 
 app.listen(port, () => {
-  log.db.info(`Authentification Started successfully server at port ${port}`);
+  log.info(`Authentification Started successfully server at port ${port}`);
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        log.db.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`);
-        log.db.info(`Connection to logs as ${mongoDBUriLog}`);
+        log.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`);
+        log.info(`Connection to logs as ${mongoDBUriLog}`)
       })
       .catch((error) => {
         log.db.error(`Authentification`, error);

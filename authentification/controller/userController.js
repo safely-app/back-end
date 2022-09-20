@@ -30,7 +30,7 @@ UserController.get('/' , checkJwt, AdminOrOwnUser, async (req, res) => {
             noPasswordUser.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
             userMap.push(noPasswordUser);
         });
-        req.app.locals.log.db.info(`${req.userId} User Get/ get all users`);
+        req.app.locals.log.info(`${req.userId} User Get/ get all users`);
         res.status(200).send(userMap);
     });
 });
@@ -42,7 +42,7 @@ UserController.get('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
         const noPasswordUser = _.pick(user, [
             '_id', 'username','email','role', 'stripeId',
             'age', 'csp', 'createdAt', 'updatedAt']);
-        req.app.locals.log.db.info(`${req.userId} User Get/:id get ${req.params.id}`);
+        req.app.locals.log.info(`${req.userId} User Get/:id get ${req.params.id}`);
         res.send(noPasswordUser);
     } else {
         req.app.locals.log.db.error(`${req.userId} User Get/:id User not found`);
@@ -60,7 +60,7 @@ UserController.get('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
             'createdAt', 'updatedAt']);
 
         noPasswordUser.hashedId = await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
-        req.app.locals.log.db.info(`${req.userId} User Get v2/:id get ${req.params.id}`);
+        req.app.locals.log.info(`${req.userId} User Get v2/:id get ${req.params.id}`);
         res.send(noPasswordUser);
     } else {
         req.app.locals.log.db.error(`${req.userId} User Get v2/:id User not found`);
@@ -95,7 +95,7 @@ UserController.put('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
                 req.app.locals.log.db.error(`${req.userId} User Put/:id Update couldn\'t be proceed`);
                 return res.status(403).json({error: 'Update couldn\'t be proceed'})
             }
-            req.app.locals.log.db.info(`${req.userId} User Put/:id Updated !`);
+            req.app.locals.log.info(`${req.userId} User Put/:id Updated !`);
             return res.status(200).json({success: 'Updated!'})
         })
     } catch {
@@ -132,7 +132,7 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
                 req.app.locals.log.db.error(`${req.userId} User v2 Put/:id Update couldn\'t be proceed`);
                 return res.status(403).json({error: 'Update couldn\'t be proceed'})
             }
-            req.app.locals.log.db.info(`${req.userId} User v2 Put/:id Updated !`);
+            req.app.locals.log.info(`${req.userId} User v2 Put/:id Updated !`);
             return res.status(200).json({success: 'Updated!'})
         })
     } catch {
@@ -144,7 +144,7 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
 UserController.delete('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req, res) => {
     User.deleteOne({_id: req.params.id})
       .then(()=> {
-            req.app.locals.log.db.info(`${req.userId} User Delete/:id User deleted !`);
+            req.app.locals.log.info(`${req.userId} User Delete/:id User deleted !`);
             res.status(200).json({ message: 'User deleted !' });
       })
       .catch( (error) => {
@@ -158,7 +158,7 @@ UserController.delete('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async
 
     User.deleteOne({_id: userId})
         .then(()=> {
-            req.app.locals.log.db.info(`${req.userId} User v2 Delete/:id User deleted !`);
+            req.app.locals.log.info(`${req.userId} User v2 Delete/:id User deleted !`);
             res.status(200).json({ message: 'User deleted !' });
         })
         .catch( (error) => {
