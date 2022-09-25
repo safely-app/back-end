@@ -5,8 +5,6 @@ import bcrypt from 'bcrypt'
 import cors from 'cors';
 import shell from 'shelljs';
 
-import 'winston-mongodb';
-
 import { LoginController, RegisterController, UserController, ProfessionalinfoController } from "./controller";
 import { config } from "./store/config";
 import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder, usersResponder } from "./store/utils";
@@ -73,25 +71,15 @@ app.get('/', (req, res) => {
   });
 });
 
-const log = logger.createLogger({
-  level: 'info',
-  format: logger.format.json(),
-  transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'}), new logger.transports.Console({level: "info", colorize: true})],
-});
-
-// console.log("AAAAA = ", log.db.transports[0]);
-
-app.locals.log = log;
-
 app.listen(port, () => {
-  log.info(`Authentification Started successfully server at port ${port}`);
+  logger.info(`Authentification Started successfully server at port ${port}`)
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        log.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`);
-        log.info(`Connection to logs as ${mongoDBUriLog}`)
+        logger.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`)
+        logger.info(`Connection to logs as ${mongoDBUriLog}`)
       })
       .catch((error) => {
-        log.db.error(`Authentification`, error);
+        logger.info(`Authentification`, error)
       });
 });
