@@ -10,6 +10,14 @@ const Stripe = stripe(dotenv.config().parsed.STRIPE_KEY);
 const Monthly = dotenv.config().parsed.MONTHLY
 const Weekly = dotenv.config().parsed.WEEKLY
 
+StripeController.post('/defaultcard', requestAuth, async (req, res) => {
+	await stripe.customers.update(
+		req.body.customer,
+		{invoice_settings: {default_payment_method: req.body.id}}
+	);
+	return res.status(200).json({message: "Card attached"});
+});
+
 StripeController.post('/user', requestAuth, async (req, res) => {
     try {
       const userInfo = await stripeUserInfo(req.headers.authorization);
