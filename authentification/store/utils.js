@@ -123,7 +123,7 @@ export async function ParamsUserCheckV2(req, res, next) {
 export async function ProfessionalInfoUserCheck(req, res, next) {
   const professionalInfo = await ProfessionalInfo.findOne({_id: req.params.id});
   req.middleware_values = professionalInfo;
-  req.middleware_values._id = JSON.stringify(professionalInfo.userId);
+  req.middleware_values._id = professionalInfo.userId;
   next();
 }
 
