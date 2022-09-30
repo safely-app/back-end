@@ -17,7 +17,7 @@ const Stripe = stripe(dotenv.config().parsed.STRIPE_KEY);
 const Monthly = dotenv.config().parsed.MONTHLY
 const Weekly = dotenv.config().parsed.WEEKLY
 
-StripeController.post('/defaultcard', async (req, res) => {
+StripeController.post('/defaultcard', requestAuth, async (req, res) => {
 	const { error } = validateStripeDefaultCard(req.body);
 	if (error) return res.status(400).send(error.details[0].message);
 
