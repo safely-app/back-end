@@ -22,6 +22,13 @@ const responder = new cote.Responder({
     key: communicationkey,
 });
 
+let requester;
+
+if (dotenv.config().parsed.NODE_ENV === 'production')
+  requester = new cote.Requester({ name: 'Extern Service authentification requester', key: config.prod.communicationKEY});
+else
+  requester = new cote.Requester({ name: 'Extern Service authentification requester', key: config.dev.communicationKEY});
+
 export function validateLogin(user) {
   const schema = Joi.object({
     email: Joi.string() .min(1) .max(255) .required() .email(),
@@ -123,7 +130,7 @@ export async function ParamsUserCheckV2(req, res, next) {
 export async function ProfessionalInfoUserCheck(req, res, next) {
   const professionalInfo = await ProfessionalInfo.findOne({_id: req.params.id});
   req.middleware_values = professionalInfo;
-  req.middleware_values._id = JSON.stringify(professionalInfo.userId);
+  req.middleware_values._id = professionalInfo.userId;
   next();
 }
 
@@ -278,4 +285,10 @@ export async function stripeUserInfoResponder() {
       }
       cb(null, {email: "", stripeId: "", name: ""});
   });
+}
+
+export async function sendLog(logLvl, logContent, logChannels) {
+  const request = { type: 'logs', logLvl: logLvl, logService: "Authentification", logContent: logContent, logChannels: logChannels};
+  let aa = await requester.send(request)
+  return aa;
 }

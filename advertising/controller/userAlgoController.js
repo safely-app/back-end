@@ -4,6 +4,7 @@ import fs from 'fs';
 import _ from "lodash";
 
 import { ValidateAlgoPost } from '../store/validation';
+import { sendLog } from '../store/utils';
 
 export const userAlgoController = express.Router();
 
@@ -11,7 +12,7 @@ userAlgoController.post('/', async (req, res) => {
     const { error } = ValidateAlgoPost(req.body);
 
     if (error) {
-        req.app.locals.log.db.error(`UserAlgo post/ `, error.details[0].message);
+        sendLog("Error", `UserAlgo post/ ${error.details[0].message}`, "");
         return res.status(400).json({ error: error.details[0].message});
     }
     
@@ -36,10 +37,10 @@ userAlgoController.post('/', async (req, res) => {
             if (userFile[i].age >= parseInt(ages[0]) && userFile[i].age <= parseInt(ages[1]) && userFile[i].csp === target.csp)
                 userList.push(userFile[i]);
         }
-        req.app.locals.log.db.info(`UserAlgo post/ sended`);
+        sendLog("Info", `UserAlgo post/ sended`, "");
         res.status(201).send(userList);
     } catch (error) {
-        req.app.locals.log.db.error(`UserAlgo post/ `, error);
+        sendLog("Error", `UserAlgo post/ ${error}`, "");
         res.status(403).send(error);
 }
 });

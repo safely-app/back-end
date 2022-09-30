@@ -43,30 +43,20 @@ else
 
 const { port, mongoDBUri, mongoHostName } = envConfig;
 
-const log = {
-  cnsl: logger.createLogger({
-    level: 'info',
-    format: logger.format.simple(),
-    transports: [new logger.transports.Console({level: "info", colorize: true})],
-  }),
-
-  db: logger.createLogger({
+const log = logger.createLogger({
     level: 'info',
     format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'logs', level: 'info'})],
-  })
-};
+    transports: [new logger.transports.MongoDB({db: mongoDBUri, collection: 'logs', level: 'info'}), new logger.transports.Console({level: "info", colorize: true})],
+  });
 
 app.locals.log = log;
 
 app.listen(port, () => {
-  log.db.info(`Safeplace Started successfully server at port ${port}`);
-  log.cnsl.info(`Started successfully server at port ${port}`);
+  log.info(`Safeplace Started successfully server at port ${port}`);
   mongoose
     .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((res) => {
-      log.db.info(`Safeplace Conneted to mongoDB at ${mongoHostName}`);
-      log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
+      log.info(`Safeplace Conneted to mongoDB at ${mongoHostName}`);
     })
     .catch((error) => {
       log.db.error(`Safeplace`, error);

@@ -12,7 +12,8 @@ import {
     validateChangePassword,
     validateUpdateUser,
     ParamsUserCheck,
-    AdminOrOwnUser
+    AdminOrOwnUser,
+    sendLog
 } from "../store/utils";
 import { config } from "../store/config";
 import {ResetPassword} from "../database/models";
@@ -30,7 +31,8 @@ UserController.get('/' , checkJwt, AdminOrOwnUser, async (req, res) => {
             noPasswordUser.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
             userMap.push(noPasswordUser);
         });
-        req.app.locals.log.info(`${req.userId} User Get/ get all users`);
+        sendLog("Info", `${req.userId} User Get/ get all users`, "");
+
         res.status(200).send(userMap);
     });
 });
@@ -42,10 +44,12 @@ UserController.get('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
         const noPasswordUser = _.pick(user, [
             '_id', 'username','email','role', 'stripeId',
             'age', 'csp', 'createdAt', 'updatedAt']);
-        req.app.locals.log.info(`${req.userId} User Get/:id get ${req.params.id}`);
+        sendLog("Info", `${req.userId} User Get/:id get ${req.params.id}`, "");
+
         res.send(noPasswordUser);
     } else {
-        req.app.locals.log.db.error(`${req.userId} User Get/:id User not found`);
+        sendLog("Error", `${req.userId} User Get/:id User not found`, "");
+
         res.status(404).json({error: "User not found"});
     }
 });
@@ -60,10 +64,12 @@ UserController.get('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
             'createdAt', 'updatedAt']);
 
         noPasswordUser.hashedId = await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));
-        req.app.locals.log.info(`${req.userId} User Get v2/:id get ${req.params.id}`);
+        sendLog("Info", `${req.userId} User Get v2/:id get ${req.params.id}`, "");
+
         res.send(noPasswordUser);
     } else {
-        req.app.locals.log.db.error(`${req.userId} User Get v2/:id User not found`);
+        sendLog("Error", `${req.userId} User Get v2/:id User not found`, "");
+
         res.status(404).json({error: "User not found"});
     }
 });
@@ -73,7 +79,8 @@ UserController.put('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
 
     const { error } = validateUpdateUser(req.body);
     if (error) {
-        req.app.locals.log.db.error(`${req.userId} User Put/:id`, error.details[0].message);
+        sendLog("Error", `${req.userId} User Put/:id ${error.details[0].message}`, "");
+
         return res.status(403).json({ error: error.details[0].message});
     }
 
@@ -92,14 +99,16 @@ UserController.put('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
 
         User.findByIdAndUpdate(req.params.id, newBody, (err, user) => {
             if (err) {
-                req.app.locals.log.db.error(`${req.userId} User Put/:id Update couldn\'t be proceed`);
+                sendLog("Error", `${req.userId} User Put/:id Update couldn\'t be proceed`, "");
+
                 return res.status(403).json({error: 'Update couldn\'t be proceed'})
             }
-            req.app.locals.log.info(`${req.userId} User Put/:id Updated !`);
+            sendLog("Info", `${req.userId} User Put/:id Updated !`, "");
             return res.status(200).json({success: 'Updated!'})
         })
     } catch {
-        req.app.locals.log.db.error(`${req.userId} User Put/:id You need to be logged as an admin or request for your profil`);
+        sendLog("Error", `${req.userId} User Put/:id You need to be logged as an admin or request for your profil`, "");
+
         return res.status(403).json({error: 'You need to be logged as an admin or request for your profil '});
     }
 });
@@ -109,7 +118,8 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
 
         const { error } = validateUpdateUser(req.body);
         if (error) {
-            req.app.locals.log.db.error(`${req.userId} User v2 Put/:id`, error.details[0].message);
+            sendLog("Error", `${req.userId} User v2 Put/:id ${error.details[0].message}`, "");
+
             return res.status(403).json({ error: error.details[0].message});
         }
 
@@ -129,14 +139,17 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
         
         User.findByIdAndUpdate(userId, newBody, (err, user) => {
             if (err) {
-                req.app.locals.log.db.error(`${req.userId} User v2 Put/:id Update couldn\'t be proceed`);
+                sendLog("Error", `${req.userId} User v2 Put/:id Update couldn\'t be proceed`, "");
+
                 return res.status(403).json({error: 'Update couldn\'t be proceed'})
             }
-            req.app.locals.log.info(`${req.userId} User v2 Put/:id Updated !`);
+            sendLog("Info", `${req.userId} User v2 Put/:id Updated !`, "");
+
             return res.status(200).json({success: 'Updated!'})
         })
     } catch {
-        req.app.locals.log.db.error(`${req.userId} User v2 Put/:id You need to be logged as an admin or request for your profil`);
+        sendLog("Error", `${req.userId} User v2 Put/:id You need to be logged as an admin or request for your profil`, "");
+
         return res.status(403).json({error: 'You need to be logged as an admin or request for your profil '});
     }
 });
@@ -144,11 +157,13 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
 UserController.delete('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req, res) => {
     User.deleteOne({_id: req.params.id})
       .then(()=> {
-            req.app.locals.log.info(`${req.userId} User Delete/:id User deleted !`);
+            sendLog("Info", `${req.userId} User Delete/:id User deleted !`, "");
+
             res.status(200).json({ message: 'User deleted !' });
       })
       .catch( (error) => {
-            req.app.locals.log.db.error(`${req.userId} User Delete/:id`, error);
+            sendLog("Error", `${req.userId} User Delete/:id ${error}`, "");
+
             res.status(400).json({ error: error });
       });
 });
@@ -158,11 +173,13 @@ UserController.delete('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async
 
     User.deleteOne({_id: userId})
         .then(()=> {
-            req.app.locals.log.info(`${req.userId} User v2 Delete/:id User deleted !`);
+            sendLog("Info", `${req.userId} User v2 Delete/:id User deleted !`, "");
+
             res.status(200).json({ message: 'User deleted !' });
         })
         .catch( (error) => {
-            req.app.locals.log.db.error(`${req.userId} User v2 Delete/:id`, error);
+            sendLog("Error", `${req.userId} User v2 Delete/:id`, "");
+
             res.status(400).json({ error: error });
         });
 });
@@ -181,8 +198,10 @@ UserController.post('/forgotPassword', async (req, res) => {
                       token = await generateToken();
                       index++;
                   } while (await ResetPassword.findOne({ resetPasswordToken: token }) && index < 100)
-                  if (index >= 100)
-                      res.status(500).json({message: "An error occurred"});
+                  if (index >= 100) {
+                    sendLog("Error", `forgotPassword ${message} An error occured`, "");
+                    res.status(500).json({message: "An error occurred"});
+                  }
 
                   let expireDate = new Date();
                   expireDate.setMinutes(expireDate.getMinutes() + 30);
@@ -196,18 +215,24 @@ UserController.post('/forgotPassword', async (req, res) => {
                   const result = await sendResetPasswordEmail(user, token);
 
                   res.status(result.status).json({ message: result.message });
-              } else
-                  return res.status(404).json({error: "User not found."})
+              } else {
+                sendLog("Error", `forgotPassword User not found`, "");
+                return res.status(404).json({error: "User not found."})
+              }
           })
-    } else
+    } else {
+        sendLog("Error", `forgotPassword You need to send an email to this route.`, "");
         return res.status(400).json({error: 'You need to send an email to this route.'})
+    }
 })
 
 UserController.post('/changePassword', async (req, res) => {
     const {error} = validateChangePassword(req.body);
 
-    if (error)
+    if (error) {
+        sendLog("Error", `changePassword ${error.details[0].message}`, "");
         return res.status(400).json( { error: error.details[0].message });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const userId = req.body.userId;
@@ -217,14 +242,22 @@ UserController.post('/changePassword', async (req, res) => {
 
         if (resetPassword) {
             if (await bcrypt.compare(resetPassword.userId, userId)) {
-                if (await User.updateOne({ _id: resetPassword.userId }, { password: password }))
+                if (await User.updateOne({ _id: resetPassword.userId }, { password: password })) {
+                    sendLog("Info", `Password updated! for user ${userId}`, "");
                     res.status(200).json({ message: "Password updated!" });
-                else
+                }
+                else {
+                    sendLog("Error", `Password update failed for user ${userId}`, "");
                     res.status(500).json({ error: "Password update failed" });
-            } else
+                }
+            } else {
+                sendLog("Error", `Wrong Id`, "");
                 res.status(400).json({ error: "Wrong Id" });
-        } else
+            }
+        } else {
+            sendLog("Error", `Password update This token doesn't exist`, "");
             res.status(400).json({ error: "This token doesn't exist" });
+        }
 })
 
 export default UserController;

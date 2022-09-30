@@ -29,33 +29,22 @@ else
 
 const { port, mongoDBUri, mongoDBUriLog, mongoHostName } = envConfig;
 
-const log = {
-  cnsl: logger.createLogger({
-    level: 'info',
-    format: logger.format.simple(),
-    transports: [new logger.transports.Console({level: "info", colorize: true})],
-  }),
-
-  db: logger.createLogger({
+const log = logger.createLogger({
     level: 'info',
     format: logger.format.json(),
-    transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'})],
-  })
-};
+    transports: [new logger.transports.MongoDB({db: mongoDBUriLog, collection: 'logs', level: 'info'}), new logger.transports.Console({level: "info", colorize: true})],
+  });
 
 app.locals.log = log;
 
 app.listen(port, () => {
-  log.db.info(`Commercial Started successfully server at port ${port}`);
-  log.cnsl.info(`Started successfully server at port ${port}`);
+  log.info(`Commercial Started successfully server at port ${port}`);
   mongoose
     .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then((res) => {
-      log.db.info(`Commercial Conneted to mongoDB at ${mongoHostName}`);
-      log.cnsl.info(`Conneted to mongoDB at ${mongoHostName}`);
+      log.info(`Commercial Conneted to mongoDB at ${mongoHostName}`);
     })
     .catch((error) => {
       log.db.error(`Commercial`, error);
-      log.cnsl.error(error);
     });
 });
