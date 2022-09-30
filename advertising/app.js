@@ -4,7 +4,7 @@ import cors from 'cors';
 import { userAlgoController, costHandler } from "./controller";
 import mongoose from "mongoose";
 import { config } from "./store/config";
-import { sendLog } from '../authentification/store/utils';
+import { sendLog } from './store/middleware';
 
 const app = express();
 
@@ -25,14 +25,14 @@ else
 const { port, mongoDBUri, mongoHostName } = envConfig;
 
 app.listen(port, () => {
-  sendLog()
-  log.info(`Advertising Started successfully server at port ${port}`);
+  console.log(`Advertising service listening at http://localhost:${port}`);
+  sendLog("Server", "Advertising Started successfully", "");
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        log.info(`Advertising Conneted to mongoDB at ${mongoHostName}`);
+        sendLog("Server", "Advertising Conneted to mongoDB", "");
       })
       .catch((error) => {
-        log.info(`Advertising `, error);
+        sendLog("Error", error, "");
       });
 });

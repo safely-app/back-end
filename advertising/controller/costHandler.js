@@ -2,7 +2,7 @@ import express from 'express';
 import { Pricing, PricingHistory } from '../database/models';
 import { ValidateCostEdition, ValidateCostPost } from '../store/validation';
 import { computeCost, saveCostHistory } from '../utils/connector';
-import { sendLog } from '../store/utils';
+import { sendLog } from '../store/middleware';
 
 export const costHandler = express.Router();
 

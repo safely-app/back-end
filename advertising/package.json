@@ -12,6 +12,7 @@
     "@sentry/tracing": "^7.12.1",
     "cors": "^2.8.5",
     "cote": "^1.0.3",
+    "dotenv": "^16.0.3",
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "express-winston": "^4.2.0",

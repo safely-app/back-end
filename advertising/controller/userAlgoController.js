@@ -4,7 +4,7 @@ import fs from 'fs';
 import _ from "lodash";
 
 import { ValidateAlgoPost } from '../store/validation';
-import { sendLog } from '../store/utils';
+import { sendLog } from '../store/middleware';
 
 export const userAlgoController = express.Router();
 
