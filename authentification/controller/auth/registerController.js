@@ -15,7 +15,6 @@ RegisterController.post('/register', async (req, res) => {
 
     if (error) {
         sendLog("Error", `${error.details[0].message}`, "");
-
         return res.status(400).json( { error: error.details[0].message });
     }
 

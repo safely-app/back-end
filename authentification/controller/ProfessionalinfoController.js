@@ -21,7 +21,6 @@ ProfessionalController.post('/', async (req, res) => {
 
     if (error) {
         sendLog("Error", `ProfessionalInfo Post/ ${error.details[0].message}`, "");
-
         return res.status(400).json({ error: error.details[0].message});
     }
 
@@ -29,7 +28,6 @@ ProfessionalController.post('/', async (req, res) => {
 
     if (!user) {
         sendLog("Error", `ProfessionalInfo Post/, ${req.body.userId} User is unknown`, "");
-
         return res.status(400).json({ error: "User is unknown" });
     }
 
@@ -38,7 +36,6 @@ ProfessionalController.post('/', async (req, res) => {
 
         if (!updated) {
             sendLog("Error", `ProfessionalInfo Post/, ${user._id} User role update couldn't proceed`, "");
-
             return res.status(403).json({ error: "User role update couldn't proceed" });
         }
     }
@@ -51,7 +48,6 @@ ProfessionalController.post('/', async (req, res) => {
     await professional.save();
     professional.hashedId = await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
     sendLog("Info", `ProfessionalInfo Post/, ${user._id}'s professional info created`, "");
-
     res.status(201).send(professional);
 });
 
@@ -71,7 +67,6 @@ ProfessionalController.get('/', checkJwt, AdminOrOwnUser, async (req, res) => {
         });
         if (professionalMap.length > 0) {
             sendLog("Info", `ProfessionalInfo Get/, ${professionalMap[0].userId} get his professional infos`, "");
-
         }
         res.status(200).send(professionalMap);
     });
@@ -92,7 +87,6 @@ ProfessionalController.get('/owner/:id', checkJwt, ParamsUserCheck, AdminOrOwnUs
         res.send(PickedProfessional);
     } else {
         sendLog("Error", `ProfessionalInfo Get/owner/:id, couldn't get his professional infos`, "");
-
         res.status(404).json({ error: "Professional not found" });
     }
 });
@@ -108,12 +102,10 @@ ProfessionalController.get('v2/owner/:id', checkJwt, ParamsUserCheckV2, AdminOrO
             'RCS', 'registrationCity', 'SIREN', 'SIRET', 'artisanNumber', 'type']);
         sendLog("Info", `ProfessionalInfo Get v2/owner/:id ${PickedProfessional.userId} get his professional infos`, "");
 
-
         PickedProfessional.hashedId = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(professional._id.toString()));
         res.send(PickedProfessional);
     } else {
         sendLog("Error", `"ProfessionalInfo Get v2/owner/:id", couldn't get his professional infos`, "");
-
         res.status(404).json({ error: "Professional not found" });
     }
 });
@@ -132,7 +124,6 @@ ProfessionalController.get('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
         res.send(PickedProfessional);
     } else {
         sendLog("Error", `"ProfessionalInfo Get/:id", couldn't get his professional infos`, "");
-
         res.status(404).json({ error: "Professional not found" });
     }
 });
@@ -153,7 +144,6 @@ ProfessionalController.get('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
         res.send(PickedProfessional);
     } else {
         sendLog("Error", `"ProfessionalInfo Get v2/:id", couldn't get his professional infos`, "");
-
         res.status(404).json({ error: "Professional not found" });
     }
 });
@@ -163,7 +153,6 @@ ProfessionalController.put('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
 
     if (error) {
         sendLog("Error", `ProfessionalInfo Put/:id ${req.params.id} ${error.details[0].message}`, "");
-
         return res.status(400).json({ error: error.details[0].message});
     }
 
@@ -179,7 +168,6 @@ ProfessionalController.put('/:id', checkJwt, ProfessionalInfoUserCheck, AdminOrO
             return res.status(403).json({ error: 'Update couldn\'t be proceed' })
         }
         sendLog("Info", `"ProfessionalInfo Put/:id", ${req.params.id} Updated ! `, "");
-
         return res.status(200).json({ success: 'Updated!' })
     })
 });
@@ -198,7 +186,6 @@ ProfessionalController.put('v2/:id', checkJwt, ProfessionalInfoUserCheck, AdminO
             return res.status(403).json({ error: 'Update couldn\'t be proceed' })
         }
         sendLog("Info", `"ProfessionalInfo Put/:id", ${req.params.id}Update couldn\'t be proceed`, "");
-
         return res.status(200).json({ success: 'Updated!' })
     })
 });
@@ -212,7 +199,6 @@ ProfessionalController.delete('/:id', checkJwt, ProfessionalInfoUserCheck, Admin
         })
         .catch((error) => {
             sendLog("Error", `"ProfessionalInfo Put/:id", ${req.params.id} ${error}`, "");
-
             res.status(400).json({ error: error });
         });
 });
@@ -228,7 +214,6 @@ ProfessionalController.delete('v2/:id', checkJwt, ProfessionalInfoUserCheck, Adm
         })
         .catch((error) => {
             sendLog("Error", `"ProfessionalInfo Put/:id", ${req.params.id} ${error}`, "");
-
             res.status(400).json({ error: error });
         });
 });

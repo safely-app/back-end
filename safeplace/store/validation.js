@@ -102,7 +102,7 @@ export function validateNearest(safeplace) {
 export function validateTraject(traject) {
   const schema = Joi.object( {
     geocoded_waypoints : Joi.array() .required(),
-    routes : Joi.array() .required(),
+    routes : Joi.array() .min(1) .required(),
     status : Joi.string().valid("OK") .required()
   })
 

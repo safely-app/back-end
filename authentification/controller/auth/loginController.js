@@ -14,14 +14,12 @@ LoginController.post('/login', async (req, res) => {
     const { error } = validateLogin(req.body);
     if (error) {
         sendLog("Error", `/login ${error}`, "");
-
         return res.status(400).json({ error: error.details[0].message});
     }
 
     let user = await User.findOne({ email: req.body.email });
     if (!user) {
         sendLog("Error", `Incorrect email or password`, "");
-
         return res.status(401).json( { error: 'Incorrect email or password.' });
     }
     const validPassword = await bcrypt.compare(req.body.password, user.password);

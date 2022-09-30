@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt'
 import cors from 'cors';
 import shell from 'shelljs';
 
-
 import { LoginController, RegisterController, UserController, ProfessionalinfoController } from "./controller";
 import { config } from "./store/config";
 import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder, usersResponder, sendLog } from "./store/utils";

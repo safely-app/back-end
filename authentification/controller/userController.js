@@ -49,7 +49,6 @@ UserController.get('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
         res.send(noPasswordUser);
     } else {
         sendLog("Error", `${req.userId} User Get/:id User not found`, "");
-
         res.status(404).json({error: "User not found"});
     }
 });
@@ -108,7 +107,6 @@ UserController.put('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (req
         })
     } catch {
         sendLog("Error", `${req.userId} User Put/:id You need to be logged as an admin or request for your profil`, "");
-
         return res.status(403).json({error: 'You need to be logged as an admin or request for your profil '});
     }
 });
@@ -149,7 +147,6 @@ UserController.put('v2/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (r
         })
     } catch {
         sendLog("Error", `${req.userId} User v2 Put/:id You need to be logged as an admin or request for your profil`, "");
-
         return res.status(403).json({error: 'You need to be logged as an admin or request for your profil '});
     }
 });
@@ -163,7 +160,6 @@ UserController.delete('/:id', checkJwt, ParamsUserCheck, AdminOrOwnUser, async (
       })
       .catch( (error) => {
             sendLog("Error", `${req.userId} User Delete/:id ${error}`, "");
-
             res.status(400).json({ error: error });
       });
 });
