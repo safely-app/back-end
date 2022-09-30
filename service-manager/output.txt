@@ -1,0 +1,33 @@
+#/ROUTES
+Define SAFEPLACE_SERVICE_ROUTE "/safeplace"
+#ROUTES/
+
+Define PUBLIC_DOMAIN "localhost"
+
+<IfModule headers_module>
+  RequestHeader set X-Public-Content-Service-Route ""
+#/HEADERS
+  RequestHeader set X-Public-Product-Service-Route "${SAFEPLACE_SERVICE_ROUTE}"
+#HEADERS/
+</IfModule>
+
+<IfModule include_module>
+  Options +Includes
+  SetOutputFilter INCLUDES
+</IfModule>
+
+<IfModule proxy_module>
+  <IfModule proxy_http_module>
+    ProxyPassReverseCookieDomain "localhost" "${PUBLIC_DOMAIN}"
+
+#/PROXYPASS
+    ProxyPass "${SAFEPLACE_SERVICE_ROUTE}" "http://localhost:8081"
+    ProxyPassReverse "${SAFEPLACE_SERVICE_ROUTE}" "http://localhost:8081"
+#PROXYPASS/
+
+    # Pass any other requests to the content service (must be last).
+    ProxyPass "/" "http://localhost:8080/"
+    ProxyPassReverse "/" "http://localhost:8080/"
+  </IfModule>
+</IfModule>
+

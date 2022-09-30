@@ -1,0 +1,44 @@
+{
+  "name": "node.js-ci-cd-poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon -r esm app.js",
+    "test": "nyc mocha && nyc report --reporter=lcov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CptHash/Node.js-Ci-CD-Poc.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CptHash/Node.js-Ci-CD-Poc/issues"
+  },
+  "homepage": "https://github.com/CptHash/Node.js-Ci-CD-Poc#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "istanbul": "^0.4.5", //TODO changer absolument cette merde et deplacer les dependances devops des dependance normal
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "k6": "^0.0.0", //TODO a bouger
+    "local-time": "^2.1.0", //TODO dernier commit en 2018, à dégager
+    "lodash": "^4.17.21",
+    "mongoose": "^5.12.3",
+    "nodemon": "^2.0.7",
+    "nyc": "^15.1.0", //TODO je crois que ça fonctionne avec istanbul, si c'est le cas ça dégage
+    "request": "^2.88.2", //TODO pourquoi c'est la, on ne l'utilise pas
+    "stripe": "^8.141.0", //TODO pourquoi c'est la, on ne l'utilise pas
+    "supertest": "^6.1.3", //TODO A quoi ça sert, pourquoi c'est là
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "codecov": "^3.8.1",
+    "esm": "^3.2.25",
+    "mocha": "^8.3.2"
+  }
+}

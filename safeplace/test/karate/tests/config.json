@@ -1,0 +1,7 @@
+{
+    "basicUrl": "http://localhost:",
+    "port": "8080",
+    "externServicePort": "8081",
+    "adminPassword": "%v+r[QK6WC,U3p:;",
+    "userPassword" : "Louis123"
+}

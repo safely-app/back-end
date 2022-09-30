@@ -1,0 +1,26 @@
+{
+  "name": "extern.service",
+  "version": "1.0.0",
+  "description": "get ans stock information from an external service",
+  "main": "app.js",
+  "scripts": {
+    "start": "NODE_ENV=production node -r esm app.js -p 8080",
+    "dev": "NODE_ENV=dev nodemon -r esm app.js -p 8080"
+  },
+  "dependencies": {
+    "@sentry/node": "^7.12.1",
+    "@sentry/tracing": "^7.12.1",
+    "cors": "^2.8.5",
+    "cote": "^1.0.3",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "express-winston": "^4.2.0",
+    "joi": "^17.4.2",
+    "jwt-decode": "^3.1.2",
+    "mongoose": "^6.3.2",
+    "node-fetch": "^2.6.5",
+    "nodemon": "^2.0.7",
+    "winston": "^3.8.1",
+    "winston-mongodb": "^4.0.0-rc1"
+  }
+}

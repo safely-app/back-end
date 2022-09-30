@@ -1,5 +1,13 @@
 import Joi from "joi";
 
+export function validateStripeDefaultCard(CardAndUser) {
+	const schema = Joi.object({
+	  id: Joi.string() .min(1) .max(50) .required(),
+	  customer: Joi.string() .min(1) .max(50) .required(),
+	})
+	return schema.validate(CardAndUser);
+  }
+
 export function validateStripeLinkCard(CardAndUser) {
   const schema = Joi.object({
     cardId: Joi.string() .min(1) .max(50) .required(),
@@ -34,7 +42,7 @@ export function validateStripeUpdateBilling(BillingInformation) {
 
 export function validateStripeSubscription(BillingInformation) {
   const schema = Joi.object({
-    subscription: Joi.string() .min(5) .max(10)
+    subscription: Joi.string().valid('weekly', 'monthly')
   })
   return schema.validate(BillingInformation);
 }

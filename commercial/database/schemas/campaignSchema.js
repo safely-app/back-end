@@ -13,6 +13,11 @@ const campaignSchema = new Schema({
     type: Number,
     required: true
   },
+  budgetSpent: {
+    type: Number,
+    required: false,
+    default: 0
+  },
   status: {
     type: String,
     required: true
@@ -24,6 +29,9 @@ const campaignSchema = new Schema({
   targets: {
     type: [String],
     required: true
+  },
+  safeplaceId: {
+    type: String,
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 

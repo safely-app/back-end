@@ -1,8 +1,15 @@
 import express from 'express';
 import _ from "lodash";
-import { Campaign } from '../database/models';
-import { CampaignUserCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
+import { Campaign, MarketingTarget } from '../database/models';
+import { CampaignUserCheck, needToBeAdmin, needToBeLogin, UserCheckOwnerOrAdmin } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
+import cote from "cote";
+import {config} from "../store/config";
+
+const requester = new cote.Requester({
+    name: 'authentification',
+    key: config.dev.communicationKEY,
+});
 
 export const CampaignController = express.Router();
 
@@ -13,7 +20,7 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedCampaign = _.pick(target, [
-            '_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
             PickedCampaign.targets = target.targets;
             campaignsMap.push(PickedCampaign);
         });
@@ -21,13 +28,83 @@ CampaignController.get('/', needToBeAdmin , async (req, res) => {
     });
 });
 
-CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
+
+CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) => {
+    Campaign.find({ ownerId: req.params.id }, function(err, targets) {
+        let campaignsMap = [];
+
+        targets.forEach((target) => {
+
+            let PickedCampaign = _.pick(target, [
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
+            PickedCampaign.targets = target.targets;
+            campaignsMap.push(PickedCampaign);
+        });
+        res.status(200).json(campaignsMap);
+    });
+});
+
+CampaignController.get('/safeplace/:safeplaceId', UserCheckOwnerOrAdmin , async (req, res) => {
+    Campaign.find({ safeplaceId: req.params.safeplaceId }, function(err, campaigns) {
+        let campaignsMap = [];
+
+        campaigns.forEach((campaign) => {
+
+            let PickedCampaign = _.pick(campaign, [
+            '_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
+            PickedCampaign.targets = campaign.targets;
+            campaignsMap.push(PickedCampaign);
+        });
+        res.status(200).json(campaignsMap);
+    });
+});
+
+CampaignController.put('/cost/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
 
     if (campaign) {
+        if (campaign['budgetSpent'] + req.body.cost > campaign['budget'])
+            return res.status(200).json({error: "Your are trying to spend more than the campaign's budget."});
+        campaign['budgetSpent'] += req.body.cost;
+        campaign.save();
+        return res.status(200).json(campaign);
+    } else
+        return res.status(404).json({error: "Campaign not found"});
+});
+
+CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
+    let campaign = await Campaign.findOne({ _id: req.params.id });
+    let targetedUsers = []
+    let ageRanges = []
+    let csps = []
+
+    if (campaign) {
         const PickedCampaign = _.pick(campaign,
-            ['_id', 'ownerId','name','budget', 'status', 'startingDate']);
+            ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
     
+        let targetInfos = await new Promise((resolve, reject) => {
+            let targetInfos = [];
+            campaign.targets.forEach(async (item, index, array)=>{
+                let target = await MarketingTarget.findOne({ _id: item });
+                targetInfos.push({'ageRange': target.ageRange, 'csp': target.csp})
+                if (array.length === index + 1)
+                    resolve(targetInfos)
+            })
+        });
+        const request = { type: 'users'}
+        const users = await requester.send(request);
+
+        targetInfos.forEach((item, index)=>{
+            ageRanges.push(item['ageRange'])
+            csps.push(item['csp'])
+        })
+        users.forEach((item, index)=>{
+            if (ageRanges.includes(item['age']) && csps.includes(item['csp'])) {
+                targetedUsers.push(item['_id'])
+            }
+        })
+        PickedCampaign.targetedUsers = targetedUsers;
+        PickedCampaign.targets = targetInfos;
         res.send(PickedCampaign);
     } else
         res.status(404).json({error: "Campaign not found"});
@@ -53,7 +130,7 @@ CampaignController.put('/:id', CampaignUserCheck, async (req, res, next) => {
 CampaignController.copy('/:id', CampaignUserCheck, async (req, res) => {
     let campaign = await Campaign.findOne({ _id: req.params.id });
     let new_campaign = new Campaign(_.pick(campaign,
-        ['ownerId','name','budget', 'status', 'startingDate']));
+        ['ownerId','name','budget', 'status', 'startingDate', 'safeplaceId']));
         
     new_campaign.targets = campaign.targets;
     new_campaign.name = new_campaign.name += " (copy)";
@@ -67,7 +144,7 @@ CampaignController.post('/', needToBeLogin, async (req, res) => {
     if (error)
       return res.status(400).json({ error: error.details[0].message});
     let campaign = new Campaign(_.pick(req.body, [
-        'ownerId','name','budget', 'status', 'startingDate']));
+        'ownerId','name','budget', 'status', 'startingDate', 'safeplaceId']));
     campaign.targets = req.body.targets;
     await campaign.save();
     res.status(201).send(campaign);
