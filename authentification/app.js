@@ -1,13 +1,12 @@
 import express from 'express';
 import mongoose from "mongoose";
-import logger from 'winston';
 import bcrypt from 'bcrypt'
 import cors from 'cors';
 import shell from 'shelljs';
 
 import { LoginController, RegisterController, UserController, ProfessionalinfoController } from "./controller";
 import { config } from "./store/config";
-import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder, usersResponder } from "./store/utils";
+import { authResponder, stripeUserCreationResponder, stripeUserInfoResponder, usersResponder, sendLog } from "./store/utils";
 
 const app = express();
 
@@ -72,14 +71,13 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  logger.info(`Authentification Started successfully server at port ${port}`)
+  sendLog("Server", "Started successfully", "");
   mongoose
       .connect(mongoDBUri, { useNewUrlParser: true, useUnifiedTopology: true })
       .then((res) => {
-        logger.info(`Authentification Conneted to mongoDB at ${mongoHostName}}`)
-        logger.info(`Connection to logs as ${mongoDBUriLog}`)
+        sendLog("Server", "Conneted to mongoDB", "");
       })
       .catch((error) => {
-        logger.info(`Authentification`, error)
+        sendLog("Error", error, "");
       });
 });

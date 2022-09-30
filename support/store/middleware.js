@@ -25,12 +25,15 @@ export async function requestAuth(req, res, next) {
 }
 
 export async function ownerOrAdmin(ownerId, jwt) {
-  console.log("HIHI");
   const request = { type: 'owner or admin', ownerId: ownerId, jwt: jwt};
-  console.log("HIHI2");
-  let aa = await requester.send(request)
-  console.log("KJKJ")
-  return aa;
+  let resp = await requester.send(request)
+  return resp;
+}
+
+export async function sendLog(logLvl, logContent, logChannels) {
+  const request = { type: 'logs', logLvl: logLvl, logService: "Support", logContent: logContent, logChannels: logChannels};
+  let resp = await requester.send(request)
+  return resp;
 }
 
 export async function SupportUserCheck(req, res, next) {

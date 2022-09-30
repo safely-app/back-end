@@ -1,7 +1,10 @@
 import cote from "cote";
 
+import {config} from "./config";
+
 const requester = new cote.Requester({
-    name: 'authentification'
+    name: 'advertising',
+    key: config.dev.communicationKEY
 });
 
 async function ownerOrAdmin(ownerId, jwt)
@@ -12,4 +15,10 @@ async function ownerOrAdmin(ownerId, jwt)
 
 export async function emptyMiddleware(req, res, next) {
     next();
-} 
+}
+
+export async function sendLog(logLvl, logContent, logChannels) {
+    const request = { type: 'logs', logLvl: logLvl, logService: "Advertising", logContent: logContent, logChannels: logChannels};
+    let aa = await requester.send(request)
+    return aa;
+  }
