@@ -1,7 +1,7 @@
 import express from 'express';
 import _ from "lodash";
 import { Advertising } from '../database/models';
-import { AdvertisingUserCheck, AdvertisingOwnerCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
+import { AdvertisingUserCheck, AdvertisingOwnerCheck, AdvertisingCampaignCheck, needToBeAdmin, needToBeLogin } from '../store/middleware';
 import { validateAdvertising, putValidateAdvertising } from '../store/validation';
 
 export const AdvertisingController = express.Router();
@@ -13,7 +13,7 @@ AdvertisingController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedAdvertising = _.pick(target, [
-            '_id', 'ownerId','title','description', 'imageUrl', 'targetType']);
+                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
             PickedAdvertising.targets = target.targets;
             advertisingsMap.push(PickedAdvertising);
         });
@@ -26,8 +26,8 @@ AdvertisingController.get('/:id', AdvertisingUserCheck, async (req, res) => {
 
     if (advertising) {
         const PickedAdvertising = _.pick(advertising, [
-            '_id', 'ownerId','title','description', 'imageUrl', 'targetType']);
-    
+            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+
         res.send(PickedAdvertising);
     } else
         res.status(404).json({error: "Advertising not found"});
@@ -38,11 +38,26 @@ AdvertisingController.get('/owner/:id', AdvertisingOwnerCheck , async (req, res)
 
     if (advertising) {
         const PickedAdvertising = _.pick(advertising, [
-            '_id', 'ownerId','title','description', 'imageUrl', 'targetType']);
-    
+            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+
         res.send(PickedAdvertising);
     } else
         res.status(404).json({error: "Advertising not found"});
+});
+
+AdvertisingController.get('/campaign/:id', AdvertisingCampaignCheck , async (req, res) => {
+    Advertising.find({ campaignId: req.params.id }, function(err, targets) {
+        let advertisingsMap = [];
+
+        targets.forEach((target) => {
+
+            let PickedAdvertising = _.pick(target, [
+                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+            PickedAdvertising.targets = target.targets;
+            advertisingsMap.push(PickedAdvertising);
+        });
+        res.status(200).send(advertisingsMap);
+    });
 });
 
 AdvertisingController.put('/:id', AdvertisingUserCheck, async (req, res) => {
@@ -68,7 +83,7 @@ AdvertisingController.post('/', needToBeLogin, async (req, res) => {
     if (error)
       return res.status(400).json({ error: error.details[0].message});
     let advertising = new Advertising(_.pick(req.body, [
-        'ownerId','title','description', 'imageUrl', 'targetType']));
+        'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']));
     await advertising.save();
     res.status(201).send(advertising);
 });

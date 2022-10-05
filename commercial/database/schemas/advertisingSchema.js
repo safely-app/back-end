@@ -5,6 +5,10 @@ const advertisingSchema = new Schema({
     type: String,
     required: true
   },
+  campaignId: {
+    type: String,
+    required: true
+  },
   title: {
     type: String,
     required: true
