@@ -46,17 +46,26 @@ AdvertisingController.get('/owner/:id', AdvertisingOwnerCheck , async (req, res)
 });
 
 AdvertisingController.get('/campaign/:id', AdvertisingCampaignCheck , async (req, res) => {
-    Advertising.find({ campaignId: req.params.id }, function(err, targets) {
+    Advertising.find({ campaignId: req.params.id }, function(err, advertisings) {
         let advertisingsMap = [];
 
-        targets.forEach((target) => {
+        if (err) {
+            return res.status(500).send({
+                error: 'Error: Advertising can\'t be found'
+            });
+        }
 
-            let PickedAdvertising = _.pick(target, [
+        for (const advertising of advertisings) {
+            const PickedAdvertising = _.pick(advertising, [
                 '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
-            PickedAdvertising.targets = target.targets;
-            advertisingsMap.push(PickedAdvertising);
-        });
-        res.status(200).send(advertisingsMap);
+
+            advertisingsMap.push({
+                ...PickedAdvertising,
+                targets: advertising.targets
+            });
+        }
+
+        return res.status(200).send(advertisingsMap);
     });
 });
 
