@@ -69,7 +69,7 @@ export async function marketingTargetUserCheck(req, res, next) {
     const usertoken = req.headers.authorization;
     const response = await ownerOrAdmin(marketingTarget.ownerId, usertoken);
     if (response.right === "false"|| response.right === "no")
-        return res.status(500).json({ error: response.right});
+        return res.status(401).json({ error: "Unauthorized"});
     next();
 }
 
@@ -82,7 +82,7 @@ export async function AdvertisingUserCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(advertising.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Advertising not found"});
@@ -99,12 +99,30 @@ export async function AdvertisingOwnerCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(advertising.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Advertising not found"});
     }
-} 
+}
+
+export async function AdvertisingCampaignCheck(req, res, next) {
+    try {
+        const advertising = await Advertising.findOne({campaignId: req.params.id});
+
+        req.middleware_values = advertising
+        req.middleware_values._id = advertising.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(advertising.ownerId, usertoken);
+
+        if (response.right === "false"|| response.right === "no")
+            return res.status(401).json({ error: "Unauthorized"});
+        next();
+    } catch {
+        return res.status(404).json({error: "Advertising not found"});
+    }
+}
 
 export async function NotificationsUserCheck(req, res, next) {
     try {
@@ -115,7 +133,7 @@ export async function NotificationsUserCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(notifications.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Notifications not found"});
@@ -131,7 +149,7 @@ export async function NotificationsOwnerCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(notifications.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Notifications not found"});
@@ -147,7 +165,7 @@ export async function ModifUserCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(modif.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Modif not found"});
@@ -164,7 +182,7 @@ export async function ModifOwnerCheck(req, res, next) {
         const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(modif.ownerId, usertoken);
         if (response.right === "false"|| response.right === "no")
-            return res.status(500).json({ error: response.right});
+            return res.status(401).json({ error: "Unauthorized"});
         next();
     } catch {
         return res.status(404).json({error: "Modif not found"});
