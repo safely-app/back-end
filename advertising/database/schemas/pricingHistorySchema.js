@@ -11,11 +11,11 @@ const pricingHistorySchema = new Schema({
     },
     userAge : {
         type : String,
-        required : true
+        required : false
     },
     userCsp : {
         type : String,
-        required : true
+        required : false
     },
     eventCost : {
         type : Number,
