@@ -283,3 +283,59 @@ async function updateOrCreateSafeplace(payload, type)
 // ########################################################
 // ################### End Fetch Market ###################
 // ########################################################
+
+// ########################################################
+// ################### Route calculation ##################
+// ########################################################
+
+export function getRouteRectangle(firstPoint, secondPoint) {
+  let vector = getVector(firstPoint, secondPoint);
+  let nx = getNx(vector, hauteur); // TODO: change hauteur
+  let ny = getNy(vector, nx);
+
+  //TODO: see if tuple work or need to replace it
+  let rectangleFirst = addTuple(firstPoint, (nx, ny));
+  let rectangleSecond = addTuple(firstPoint, (-nx, -ny));
+  let rectangleThird = addTuple(secondPoint, (nx, ny));
+  let rectangleFourth = addTuple(secondPoint, (-nx, -ny));
+
+  return {1: rectangleFirst, 2: rectangleSecond, 3: rectangleThird, 4: rectangleFourth};
+}
+
+export function getRectangleExtemities(rectangle) {
+  const rectangleValues = Object.values(rectangle);
+
+  console.log(rectangleValues)
+
+  // TODO
+  // const lowestLongitude = Math.max.apply(Math, rectangleValues.map((o) => {  } ));
+  // const highestLongitude =
+  // const lowestLatitude =
+  // const highestLatitude =
+}
+
+function getVector(firstPoint, secondPoint) {
+  return (firstPoint[0] - secondPoint[0], firstPoint[1] - secondPoint[1]);
+}
+
+function getNx(vector, height) {
+  let vectorSquare = Math.pow(vector[0] / vector[1], 2);
+  return height / Math.sqrt(1 + vectorSquare);
+}
+
+function getNy(vector, nx) {
+  ny = (vector[0] /vector[1]) * nx;
+  return ny * -1;
+}
+
+function addTuple(firstTuple, secondTuple) {
+  return (firstTuple[0] + secondTuple[0], firstTuple[1] + secondTuple[1]);
+}
+
+function isPointInRectangle(point, rectangle) {
+ //TODO
+}
+
+// ########################################################
+// ################### End Route calculation ##############
+// ########################################################

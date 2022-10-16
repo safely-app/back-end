@@ -4,7 +4,7 @@ import { validateTraject, validateOldTraject } from "../store/validation"
 import {requestAuth} from "../store/middleware";
 import { Safeplace } from "../database/models/";
 import {orderByDistance} from "geolib";
-import {calculateMetersWithCoordinates, filterTooFarSafeplaces, getMaxMetersOfTrajects, checkAnomalies} from "../store/utils";
+import {calculateMetersWithCoordinates, filterTooFarSafeplaces, getMaxMetersOfTrajects, checkAnomalies, getRouteRectangle, isPointInRectangle} from "../store/utils";
 
 export const TrajectController = express.Router();
 
@@ -87,16 +87,12 @@ TrajectController.post('/v2',requestAuth, async (req, res) => {
                 }
                 actualNumberOfSafeplaces++;
             }
-            // For testing purposes
-            // console.log(step.html_instructions);
-            // console.log(actualNumberOfAnomalies);
         }
     }
 
     res.status(200).json({index : bestTraject, number_of_safeplaces: numberOfSafeplaces, number_of_anomalies: numberOfAnomalies});
 })
 
-//actual traject calculation
 TrajectController.post('/old', async (req, res) => {
     const { error } = validateOldTraject(req.body);
 
@@ -123,4 +119,47 @@ TrajectController.post('/old', async (req, res) => {
     }
 
     res.status(200).json(waypoints);
+})
+
+TrajectController.post('/last', requestAuth, async => {
+    if (req.authResponse.role === 'empty')
+    return res.status(401).json({message: "Unauthorized"});
+
+    const { error } = validateTraject(req.body);
+
+    if (error)
+        return res.status(400).json({ error: error.details[0].message});
+
+    let numberOfSafeplaces = 0;
+    let numberOfAnomalies = 0; // ADD anomalies in calculus
+    let bestTraject = 0;
+    const safeplaces = Safeplace.find();
+
+
+    for (let i = 0; req.body.routes[i]; i++) {
+        let actualNumberOfSafeplaces = 0;
+        let actualNumberOfAnomalies = 0;
+        for (let step of req.body.routes[i].legs[0].steps) {
+            const rectangle = getRouteRectangle(lat, lng); // give begin an end of leg
+            const rectangleExtemities = getRectangleExtemities(rectangle); 
+            const filteredSafeplaces = safeplaces.filter((o) => {
+                o.coordinate[0] > rectangleExtemities.lowestLongitude &&
+                o.coordinate[0] < rectangleExtemities.highestLongitude &&
+                o.coordinate[1] > rectangleExtemities.lowestLatitude &&
+                o.coordinate[1] < rectangleExtemities.highestLatitude
+            });
+
+            console.log(filteredSafeplaces);
+            for (const safeplace of filteredSafeplaces) {
+                if (isPointInRectangle(safeplace, rectangle))
+                    actualNumberOfSafeplaces++;
+            }
+        }
+
+        if (actualNumberOfSafeplaces > numberOfSafeplaces) {
+            numberOfSafeplaces = actualNumberOfSafeplaces;
+            bestTraject = i;
+        }
+    }
+    res.status(200).json({ index : bestTraject, number_of_safeplaces: numberOfSafeplaces });
 })
