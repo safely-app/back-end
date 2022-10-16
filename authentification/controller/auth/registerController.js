@@ -28,7 +28,7 @@ RegisterController.post('/register', async (req, res) => {
         user['role'] = 'user';
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
-        user['token'] = jwt.sign({ _id: user._id }, config.dev.privateKEY, {expiresIn: 60*60*2, algorithm: 'RS256'});
+        user['token'] = jwt.sign({ _id: user._id }, config.dev.privateKEY, {algorithm: 'RS256'});
 
         await user.save();
 
