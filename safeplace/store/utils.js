@@ -89,6 +89,19 @@ export async function getMaxMetersOfTrajects(routes) {
   return maxMeters;
 }
 
+export async function getAnomalies(res, req) {
+  //let anomalies = await fetch('https://api.safely-app.fr/support/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
+  let anomalies = await fetch('http://localhost:8085/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
+
+  console.log(anomalies.status)
+  if (anomalies.status === 401)
+    return res.status(401).json({message: "Unauthorized"});
+  else if (anomalies.status === 500)
+    return res.status(500).json({message: "Internal server error"});
+  else
+    return await anomalies.json();
+}
+
 export async function checkAnomalies(step, anomalies) {
   let splitinstructions = step.html_instructions.split("<b>");
   splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
@@ -290,14 +303,13 @@ async function updateOrCreateSafeplace(payload, type)
 
 export function getRouteRectangle(firstPoint, secondPoint) {
   let vector = getVector(firstPoint, secondPoint);
-  let nx = getNx(vector, hauteur); // TODO: change hauteur
+  let nx = getNx(vector, 0.0005); // TODO: change hauteur
   let ny = getNy(vector, nx);
 
-  //TODO: see if tuple work or need to replace it
-  let rectangleFirst = addTuple(firstPoint, (nx, ny));
-  let rectangleSecond = addTuple(firstPoint, (-nx, -ny));
-  let rectangleThird = addTuple(secondPoint, (nx, ny));
-  let rectangleFourth = addTuple(secondPoint, (-nx, -ny));
+  let rectangleFirst = addVectors([firstPoint.lat, firstPoint.lng], [nx, ny]);
+  let rectangleSecond = addVectors([firstPoint.lat, firstPoint.lng], [-nx, -ny]);
+  let rectangleThird = addVectors([secondPoint.lat, secondPoint.lng], [nx, ny]);
+  let rectangleFourth = addVectors([secondPoint.lat, secondPoint.lng], [-nx, -ny]);
 
   return {1: rectangleFirst, 2: rectangleSecond, 3: rectangleThird, 4: rectangleFourth};
 }
@@ -305,17 +317,16 @@ export function getRouteRectangle(firstPoint, secondPoint) {
 export function getRectangleExtemities(rectangle) {
   const rectangleValues = Object.values(rectangle);
 
-  console.log(rectangleValues)
+  const lowestLongitude = Math.min(...rectangleValues.map(point => point[0]));
+  const highestLongitude = Math.max(...rectangleValues.map(point => point[0]));
+  const lowestLatitude = Math.min(...rectangleValues.map(point => point[1]));
+  const highestLatitude = Math.max(...rectangleValues.map(point => point[1]));
 
-  // TODO
-  // const lowestLongitude = Math.max.apply(Math, rectangleValues.map((o) => {  } ));
-  // const highestLongitude =
-  // const lowestLatitude =
-  // const highestLatitude =
+  return {lowestLongitude, highestLongitude, lowestLatitude, highestLatitude};
 }
 
 function getVector(firstPoint, secondPoint) {
-  return (firstPoint[0] - secondPoint[0], firstPoint[1] - secondPoint[1]);
+    return [secondPoint.lat - firstPoint.lat, secondPoint.lng - firstPoint.lng];
 }
 
 function getNx(vector, height) {
@@ -324,16 +335,44 @@ function getNx(vector, height) {
 }
 
 function getNy(vector, nx) {
-  ny = (vector[0] /vector[1]) * nx;
+  const ny = (vector[0] / vector[1]) * nx;
   return ny * -1;
 }
 
-function addTuple(firstTuple, secondTuple) {
-  return (firstTuple[0] + secondTuple[0], firstTuple[1] + secondTuple[1]);
+function addVectors(firstVector, secondVector) {
+  return [firstVector[0] + secondVector[0], firstVector[1] + secondVector[1]];
 }
 
-function isPointInRectangle(point, rectangle) {
- //TODO
+function substractVectors(firstVector, secondVector) {
+  return [firstVector[0] - secondVector[0], firstVector[1] - secondVector[1]];
+}
+
+function dot(firstVector, secondVector) {
+  return firstVector[0] * secondVector[0] + firstVector[1] * secondVector[1];
+}
+
+export function filterItemsInMaxCoordinates(items, rectangleExtemities) {
+  return items.filter(item => {
+    return parseFloat(item.coordinate[0]) > rectangleExtemities.lowestLongitude &&
+        parseFloat(item.coordinate[0]) < rectangleExtemities.highestLongitude &&
+        parseFloat(item.coordinate[1]) > rectangleExtemities.lowestLatitude &&
+        parseFloat(item.coordinate[1]) < rectangleExtemities.highestLatitude
+  });
+}
+
+export function isPointInRectangle(point, rectangle) {
+  const pointCoordinates = [parseFloat(point.coordinate[0]), parseFloat(point.coordinate[1])];
+
+  const vector1 = substractVectors(rectangle[1], rectangle[2]);
+  const vector2 = substractVectors(rectangle[1], rectangle[3]);
+  const vector3 = substractVectors(rectangle[1], pointCoordinates);
+
+  const dotFirst = dot(vector3, vector1);
+  const dotSecond = dot(vector1, vector1);
+  const dotThird = dot(vector3, vector2);
+  const dotFourth = dot(vector2, vector2);
+
+  return 0 <= dotFirst && dotFirst <= dotSecond && 0 <= dotThird && dotThird <= dotFourth
 }
 
 // ########################################################
