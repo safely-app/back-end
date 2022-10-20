@@ -90,10 +90,9 @@ export async function getMaxMetersOfTrajects(routes) {
 }
 
 export async function getAnomalies(res, req) {
-  //let anomalies = await fetch('https://api.safely-app.fr/support/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
-  let anomalies = await fetch('http://localhost:8085/anomaly/validated', {method: 'GET', headers: {'Authorization': req.headers.authorization}})
+  const supportUrl = process.env.NODE_ENV === 'production' ? config.prod.supportUrl : config.dev.supportUrl;
+  let anomalies = await fetch(supportUrl, {method: 'GET', headers: {'Authorization': req.headers.authorization}})
 
-  console.log(anomalies.status)
   if (anomalies.status === 401)
     return res.status(401).json({message: "Unauthorized"});
   else if (anomalies.status === 500)
@@ -303,7 +302,7 @@ async function updateOrCreateSafeplace(payload, type)
 
 export function getRouteRectangle(firstPoint, secondPoint) {
   let vector = getVector(firstPoint, secondPoint);
-  let nx = getNx(vector, 0.0005); // TODO: change hauteur
+  let nx = getNx(vector, 0.0005);
   let ny = getNy(vector, nx);
 
   let rectangleFirst = addVectors([firstPoint.lat, firstPoint.lng], [nx, ny]);
@@ -314,7 +313,7 @@ export function getRouteRectangle(firstPoint, secondPoint) {
   return {1: rectangleFirst, 2: rectangleSecond, 3: rectangleThird, 4: rectangleFourth};
 }
 
-export function getRectangleExtemities(rectangle) {
+export function getRectangleExtremities(rectangle) {
   const rectangleValues = Object.values(rectangle);
 
   const lowestLongitude = Math.min(...rectangleValues.map(point => point[0]));
@@ -351,12 +350,12 @@ function dot(firstVector, secondVector) {
   return firstVector[0] * secondVector[0] + firstVector[1] * secondVector[1];
 }
 
-export function filterItemsInMaxCoordinates(items, rectangleExtemities) {
+export function filterItemsInMaxCoordinates(items, rectangleExtremities) {
   return items.filter(item => {
-    return parseFloat(item.coordinate[0]) > rectangleExtemities.lowestLongitude &&
-        parseFloat(item.coordinate[0]) < rectangleExtemities.highestLongitude &&
-        parseFloat(item.coordinate[1]) > rectangleExtemities.lowestLatitude &&
-        parseFloat(item.coordinate[1]) < rectangleExtemities.highestLatitude
+    return parseFloat(item.coordinate[0]) > rectangleExtremities.lowestLongitude &&
+        parseFloat(item.coordinate[0]) < rectangleExtremities.highestLongitude &&
+        parseFloat(item.coordinate[1]) > rectangleExtremities.lowestLatitude &&
+        parseFloat(item.coordinate[1]) < rectangleExtremities.highestLatitude
   });
 }
 

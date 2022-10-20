@@ -11,7 +11,7 @@ import {
     checkAnomalies,
     getRouteRectangle,
     isPointInRectangle,
-    getRectangleExtemities,
+    getRectangleExtremities,
     filterItemsInMaxCoordinates,
     getAnomalies,
 } from "../store/utils";
@@ -38,9 +38,9 @@ TrajectController.post('/', requestAuth, async (req, res) => {
         let actualNumberOfAnomalies = 0;
         for (let step of req.body.routes[i].legs[0].steps) {
             const rectangle = getRouteRectangle(step.start_location, step.end_location);
-            const rectangleExtemities = getRectangleExtemities(rectangle);
+            const rectangleExtremities = getRectangleExtremities(rectangle);
 
-            const filteredSafeplaces = filterItemsInMaxCoordinates(safeplaces, rectangleExtemities);
+            const filteredSafeplaces = filterItemsInMaxCoordinates(safeplaces, rectangleExtremities);
             // For frequency and lighting, just do as shown in the line above
             actualNumberOfAnomalies += await checkAnomalies(step, anomalies);
 
@@ -58,7 +58,7 @@ TrajectController.post('/', requestAuth, async (req, res) => {
             bestTraject = i;
         }
     }
-    res.status(200).json({ index : bestTraject, number_of_safeplaces: numberOfSafeplaces, numberOfAnomalies: numberOfAnomalies});
+    res.status(200).json({ index : bestTraject, numberOfSafeplaces: numberOfSafeplaces, numberOfAnomalies: numberOfAnomalies});
 })
 
 //########## OLD ROUTE ##########
