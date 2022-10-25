@@ -79,6 +79,20 @@ costHandler.get('/history', async (req, res) => {
 	}
 });
 
+costHandler.get('/history/:campaignId', async (req, res) => {
+	const history = await PricingHistory.find({campaignId: req.params.campaignId});
+
+	if (history) {
+		sendLog("Info", `CostHandler history/ getted for ${req.params.campaignId}`, "");
+
+		return res.status(200).json(history);
+	} else {
+		sendLog("Error", `CostHandler history/ No histories found for ${req.params.id}`, "");
+
+		return res.status(500).json({ error: `No histories found for ${req.params.campaignId}`});
+	}
+});
+
 costHandler.post('/event', async (req, res) => {
     const { error } = ValidateCostPost(req.body);
 
