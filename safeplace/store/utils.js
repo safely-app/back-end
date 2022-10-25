@@ -359,7 +359,7 @@ export function filterItemsInMaxCoordinates(items, rectangleExtremities) {
   });
 }
 
-export function isPointInRectangle(point, rectangle) {
+function isPointInRectangle(point, rectangle) {
   const pointCoordinates = [parseFloat(point.coordinate[0]), parseFloat(point.coordinate[1])];
 
   const vector1 = substractVectors(rectangle[1], rectangle[2]);
@@ -372,6 +372,17 @@ export function isPointInRectangle(point, rectangle) {
   const dotFourth = dot(vector2, vector2);
 
   return 0 <= dotFirst && dotFirst <= dotSecond && 0 <= dotThird && dotThird <= dotFourth
+}
+
+export function getNumberOfObjectsInRectangle(objects, rectangle) {
+    let numberOfObjects = 0;
+
+    for (const object of objects) {
+        if (isPointInRectangle(object, rectangle))
+        numberOfObjects++;
+    }
+
+    return numberOfObjects;
 }
 
 // ########################################################

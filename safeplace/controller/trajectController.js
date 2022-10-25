@@ -10,10 +10,10 @@ import {
     getMaxMetersOfTrajects,
     checkAnomalies,
     getRouteRectangle,
-    isPointInRectangle,
     getRectangleExtremities,
     filterItemsInMaxCoordinates,
     getAnomalies,
+    getNumberOfObjectsInRectangle
 } from "../store/utils";
 
 export const TrajectController = express.Router();
@@ -44,14 +44,11 @@ TrajectController.post('/', requestAuth, async (req, res) => {
             // For frequency and lighting, just do as shown in the line above
             actualNumberOfAnomalies += await checkAnomalies(step, anomalies);
 
-            for (const safeplace of filteredSafeplaces) {
-                if (isPointInRectangle(safeplace, rectangle))
-                    actualNumberOfSafeplaces++;
-            }
-            // For frequency and lighting, just do as shown in the for above above
+            actualNumberOfSafeplaces = getNumberOfObjectsInRectangle(filteredSafeplaces, rectangle);
+            // For frequency and lighting, just do as shown in the line above
         }
 
-        // For frequency and lighting, In this if we have the calculation, we can put it in another function when we hav everything
+        // For frequency and lighting, In this if we have the calculation, we can put it in another function when we have everything
         if (actualNumberOfSafeplaces - (actualNumberOfAnomalies * 2) > numberOfSafeplaces - (numberOfAnomalies * 2)) {
             numberOfSafeplaces = actualNumberOfSafeplaces;
             numberOfAnomalies = actualNumberOfAnomalies;
