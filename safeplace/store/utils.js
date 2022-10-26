@@ -91,7 +91,7 @@ export async function getMaxMetersOfTrajects(routes) {
 
 export async function getAnomalies(res, req) {
   const supportUrl = process.env.NODE_ENV === 'production' ? config.prod.supportUrl : config.dev.supportUrl;
-  let anomalies = await fetch(supportUrl, {method: 'GET', headers: {'Authorization': req.headers.authorization}})
+  let anomalies = await fetch(supportUrl + "anomaly/validated", {method: 'GET', headers: {'Authorization': req.headers.authorization}})
 
   if (anomalies.status === 401)
     return res.status(401).json({message: "Unauthorized"});
