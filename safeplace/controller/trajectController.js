@@ -44,7 +44,7 @@ TrajectController.post('/', requestAuth, async (req, res) => {
             // For frequency and lighting, just do as shown in the line above
             actualNumberOfAnomalies += await checkAnomalies(step, anomalies);
 
-            actualNumberOfSafeplaces = getNumberOfObjectsInRectangle(filteredSafeplaces, rectangle);
+            actualNumberOfSafeplaces += getNumberOfObjectsInRectangle(filteredSafeplaces, rectangle);
             // For frequency and lighting, just do as shown in the line above
         }
 
