@@ -106,7 +106,7 @@ export async function checkAnomalies(step, anomalies) {
   splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
   splitinstructions = await makeVerboseStreet(splitinstructions);
 
-  let obj = anomalies.find(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]* /, "") === splitinstructions.toLowerCase());
+  let obj = anomalies.find(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]+ /, "") === splitinstructions.toLowerCase());
   if (obj)
     return 1;
   else
