@@ -13,7 +13,7 @@ import {
   MailingController,
   TrajectController
 } from "./controller";
-import { fetchMarket, safeplaceResponder } from "./store/utils";
+import { fetchMarket } from "./store/utils";
 import { config } from "./store/config";
 
 const app = express();
@@ -33,7 +33,6 @@ app.use("/traject", TrajectController);
 //   await fetchMarket();
 // }, 1000);
 fetchMarket();
-safeplaceResponder();
 
 let envConfig;
 

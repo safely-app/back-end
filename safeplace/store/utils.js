@@ -5,40 +5,6 @@ import { config } from "./config";
 import {Safeplace} from "../database/models";
 import fetch from 'node-fetch';
 import {orderByDistance} from "geolib";
-import dotenv from "dotenv";
-import cote from "cote";
-
-let communicationkey;
-if (dotenv.config().parsed.NODE_ENV === 'production')
-  communicationkey = config.prod.communicationKEY;
-else
-  communicationkey = config.dev.communicationKEY;
-
-const responder = new cote.Responder({
-  name: 'authentication',
-  key: communicationkey,
-});
-
-export async function safeplaceResponder() {
-  responder.on('get safeplace', async (req, cb) => {
-    const safeplaceId = req.safeplaceId;
-
-    if (safeplaceId !== undefined) {
-      try {
-        const safeplace = await Safeplace.findOne({_id: safeplaceId });
-
-        cb(null, safeplace);
-        return;
-      } catch(e) {
-        cb({ "msg": "Safeplace does not exist" }, {});
-        return;
-      }
-    } else {
-      cb({ "msg": "Safeplace Id is needed" }, {});
-      return;
-    }
-  });
-}
 
 export async function sendTimetableVerificationEmail(email, id) {
   const transporter = nodemailer.createTransport({

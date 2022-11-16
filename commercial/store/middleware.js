@@ -1,5 +1,6 @@
 import { MarketingTarget, Campaign, Advertising, Notifications, Modif } from "../database/models";
 import { config } from "./config";
+import fetch from 'node-fetch';
 import cote from "cote";
 
 const requester = new cote.Requester({
@@ -13,10 +14,19 @@ async function ownerOrAdmin(ownerId, jwt)
     return await requester.send(request);
 }
 
-async function getSafeplace(safeplaceId)
+async function getSafeplace(safeplaceId, authorization)
 {
-    const request = { type: 'get safeplace', safeplaceId: safeplaceId };
-    return await requester.send(request);
+    try {
+        const options = { method: 'GET', headers: { 'Authorization': authorization } };
+        const safeplaceResponse = await fetch(`https://api.safely-app.fr/safeplace/${safeplaceId}`, options);
+
+        console.log(safeplaceResponse);
+
+        return await safeplaceResponse.json();
+    } catch (err) {
+        console.error(err);
+        return undefined;
+    }
 }
 
 export async function needToBeLogin(req, res, next) {
@@ -52,15 +62,12 @@ export async function UserCheckOwnerOrAdmin(req, res, next) {
 export async function SafeplaceUserCheck(req, res, next) {
     try {
         const safeplaceId = req.params.safeplaceId;
-        const safeplace = await getSafeplace(safeplaceId);
+        const usertoken = req.headers.authorization;
+        const safeplace = await getSafeplace(safeplaceId, usertoken);
 
         if(!safeplace)
             return res.status(500).json({ error: "Safeplace not found."});
 
-        req.middleware_values = safeplace
-        req.middleware_values._id = safeplace.ownerId
-
-        const usertoken = req.headers.authorization;
         const response = await ownerOrAdmin(safeplace.ownerId, usertoken);
 
         if (response.right === "false" || response.right === "no")
