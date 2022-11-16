@@ -13,6 +13,12 @@ async function ownerOrAdmin(ownerId, jwt)
     return await requester.send(request);
 }
 
+async function getSafeplace(safeplaceId)
+{
+    const request = { type: 'get safeplace', safeplaceId: safeplaceId };
+    return await requester.send(request);
+}
+
 export async function needToBeLogin(req, res, next) {
     const request = { type: 'owner or admin', ownerId: "", jwt: req.headers.authorization};
     const response = await requester.send(request);
@@ -41,6 +47,28 @@ export async function UserCheckOwnerOrAdmin(req, res, next) {
     if (response.right === "false" || response.right === "no")
         return res.status(401).json({ error: "Unauthorized"});
     next();
+}
+
+export async function SafeplaceUserCheck(req, res, next) {
+    try {
+        const safeplaceId = req.params.safeplaceId;
+        const safeplace = await getSafeplace(safeplaceId);
+
+        if(!safeplace)
+            return res.status(500).json({ error: "Safeplace not found."});
+
+        req.middleware_values = safeplace
+        req.middleware_values._id = safeplace.ownerId
+
+        const usertoken = req.headers.authorization;
+        const response = await ownerOrAdmin(safeplace.ownerId, usertoken);
+
+        if (response.right === "false" || response.right === "no")
+            return res.status(401).json({ error: "Unauthorized"});
+        next();
+    } catch (err) {
+        return res.status(500).json({ error: "An error occured" });
+    }
 }
 
 export async function CampaignUserCheck(req, res, next) {
