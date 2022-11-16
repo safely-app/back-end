@@ -1,6 +1,6 @@
 import { MarketingTarget, Campaign, Advertising, Notifications, Modif } from "../database/models";
+import { getSafeplace } from './utils';
 import { config } from "./config";
-import fetch from 'node-fetch';
 import cote from "cote";
 
 const requester = new cote.Requester({
@@ -12,21 +12,6 @@ async function ownerOrAdmin(ownerId, jwt)
 {
     const request = { type: 'owner or admin', ownerId: ownerId, jwt: jwt};
     return await requester.send(request);
-}
-
-async function getSafeplace(safeplaceId, authorization)
-{
-    try {
-        const options = { method: 'GET', headers: { 'Authorization': authorization } };
-        const safeplaceResponse = await fetch(`https://api.safely-app.fr/safeplace/${safeplaceId}`, options);
-
-        console.log(safeplaceResponse);
-
-        return await safeplaceResponse.json();
-    } catch (err) {
-        console.error(err);
-        return undefined;
-    }
 }
 
 export async function needToBeLogin(req, res, next) {
