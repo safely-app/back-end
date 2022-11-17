@@ -5,7 +5,6 @@ import { config } from "./config";
 import {Safeplace} from "../database/models";
 import fetch from 'node-fetch';
 import {orderByDistance} from "geolib";
-import {func} from "joi";
 
 export async function sendTimetableVerificationEmail(email, id) {
   const transporter = nodemailer.createTransport({

@@ -1,4 +1,5 @@
 import { MarketingTarget, Campaign, Advertising, Notifications, Modif } from "../database/models";
+import { getSafeplace } from './utils';
 import { config } from "./config";
 import cote from "cote";
 
@@ -41,6 +42,25 @@ export async function UserCheckOwnerOrAdmin(req, res, next) {
     if (response.right === "false" || response.right === "no")
         return res.status(401).json({ error: "Unauthorized"});
     next();
+}
+
+export async function SafeplaceUserCheck(req, res, next) {
+    try {
+        const safeplaceId = req.params.safeplaceId;
+        const usertoken = req.headers.authorization;
+        const safeplace = await getSafeplace(safeplaceId, usertoken);
+
+        if(!safeplace)
+            return res.status(500).json({ error: "Safeplace not found."});
+
+        const response = await ownerOrAdmin(safeplace.ownerId, usertoken);
+
+        if (response.right === "false" || response.right === "no")
+            return res.status(401).json({ error: "Unauthorized"});
+        next();
+    } catch (err) {
+        return res.status(500).json({ error: "An error occured" });
+    }
 }
 
 export async function CampaignUserCheck(req, res, next) {
