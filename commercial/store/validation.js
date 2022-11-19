@@ -54,7 +54,7 @@ export function putValidateAdvertising(campaign) {
     campaignId: Joi.string() .length(24),
     title: Joi.string() .min(1) .max(25),
     description: Joi.string() .min(1) .max(255),
-    imageUrl: Joi.string() .min(1) .max(255),
+    imageUrl: Joi.string() .min(1),
     targetType: Joi.array().items(Joi.string()) .min(0) .max(10),
   })
   return schema.validate(campaign);
@@ -66,7 +66,7 @@ export function validateAdvertising(campaign) {
     campaignId: Joi.string() .length(24) .required(),
     title: Joi.string() .min(1) .max(25) .required(),
     description: Joi.string() .min(1) .max(255) .required(),
-    imageUrl: Joi.string() .min(1) .max(255) .required(),
+    imageUrl: Joi.string() .min(1) .required(),
     targetType: Joi.array().items(Joi.string()) .min(0) .max(10) .required()
   })
   return schema.validate(campaign);
