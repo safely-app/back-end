@@ -270,9 +270,9 @@ async function updateOrCreateSafeplace(payload, type)
     let timetable = [];
 
     days.forEach((day, index) => {
-      if (item.fields.jour.search(day) >= 0)
-        timetable.push(item.fields.horaire);
-      else
+      if (item.fields.jour.search(day) >= 0) {
+          timetable.push(item.fields.horaire);
+      } else
         timetable.push(null);
     })
 
@@ -373,13 +373,89 @@ function isPointInRectangle(point, rectangle) {
   return 0 <= dotFirst && dotFirst <= dotSecond && 0 <= dotThird && dotThird <= dotFourth
 }
 
+function hasHours(timetable) {
+    return timetable.filter(hours => hours !== '').length > 0;
+}
+
+function getMarketHours(time) {
+    try {
+    const regex = /(\d+)h(\d+)* à (\d+)h(\d+)*/;
+    const matches = time.match(regex);
+    const start = matches[2] ? parseInt(matches[1]) * 60 + parseInt(matches[2]) : parseInt(matches[1]) * 60;
+    const end = matches[4] ?  parseInt(matches[3]) * 60 + parseInt(matches[4]) :  parseInt(matches[3]) * 60;
+    return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getSimpleHours(time) {
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getComplexHours(time) {
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+), (\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start1 = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end1 = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        const start2 = parseInt(matches[5]) * 60 + parseInt(matches[6]);
+        const end2 = parseInt(matches[7]) * 60 + parseInt(matches[8]);
+        return { start1, end1, start2, end2 };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getOpenedHours(time, type) {
+    if (type === 'Market')
+        return  getMarketHours(time);
+    else if (time.includes(','))
+        return getComplexHours(time);
+    else
+        return getSimpleHours(time);
+}
+
+export function isOpen(safeplace) {
+    const date = new Date();
+    const time = date.getMinutes() + date.getHours() * 60;
+    let day = date.getDay() - 1;
+
+    if (day < 0)
+        day = 6;
+
+    if (hasHours(safeplace.dayTimetable)) {
+        const openedHours = getOpenedHours(safeplace.dayTimetable[day], safeplace.type);
+
+        if (!openedHours)
+            return false;
+        if (openedHours === '') {
+            return false;
+        } else {
+            if (openedHours.start2 && openedHours.end2)
+                return (time >= openedHours.start1 && time <= openedHours.end1) || (time >= openedHours.start2 && time <= openedHours.end2);
+            else
+                return time >= openedHours.start1 && time <= openedHours.end1;
+        }
+    }
+    return true;
+}
+
 export function getNumberOfObjectsInRectangle(objects, rectangle) {
     let numberOfObjects = 0;
 
-    for (const object of objects) {
+    for (const object of objects)
         if (isPointInRectangle(object, rectangle))
-        numberOfObjects++;
-    }
+            if (isOpen(object))
+                numberOfObjects++;
 
     return numberOfObjects;
 }
