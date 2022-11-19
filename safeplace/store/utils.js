@@ -378,29 +378,41 @@ function hasHours(timetable) {
 }
 
 function getMarketHours(time) {
+    try {
     const regex = /(\d+)h(\d+)* à (\d+)h(\d+)*/;
     const matches = time.match(regex);
     const start = matches[2] ? parseInt(matches[1]) * 60 + parseInt(matches[2]) : parseInt(matches[1]) * 60;
     const end = matches[4] ?  parseInt(matches[3]) * 60 + parseInt(matches[4]) :  parseInt(matches[3]) * 60;
     return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
 }
 
 function getSimpleHours(time) {
-    const regex = /(\d+):(\d+)-(\d+):(\d+)/;
-    const matches = time.match(regex);
-    const start = parseInt(matches[1]) * 60 + parseInt(matches[2]);
-    const end = parseInt(matches[3]) * 60 + parseInt(matches[4]);
-    return { start1: start , end1: end };
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
 }
 
 function getComplexHours(time) {
-    const regex = /(\d+):(\d+)-(\d+):(\d+), (\d+):(\d+)-(\d+):(\d+)/;
-    const matches = time.match(regex);
-    const start1 = parseInt(matches[1]) * 60 + parseInt(matches[2]);
-    const end1 = parseInt(matches[3]) * 60 + parseInt(matches[4]);
-    const start2 = parseInt(matches[5]) * 60 + parseInt(matches[6]);
-    const end2 = parseInt(matches[7]) * 60 + parseInt(matches[8]);
-    return { start1, end1, start2, end2 };
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+), (\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start1 = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end1 = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        const start2 = parseInt(matches[5]) * 60 + parseInt(matches[6]);
+        const end2 = parseInt(matches[7]) * 60 + parseInt(matches[8]);
+        return { start1, end1, start2, end2 };
+    } catch (error) {
+        return null;
+    }
 }
 
 function getOpenedHours(time, type) {
@@ -412,7 +424,7 @@ function getOpenedHours(time, type) {
         return getSimpleHours(time);
 }
 
-function isOpen(safeplace) {
+export function isOpen(safeplace) {
     const date = new Date();
     const time = date.getMinutes() + date.getHours() * 60;
     let day = date.getDay() - 1;
@@ -423,6 +435,8 @@ function isOpen(safeplace) {
     if (hasHours(safeplace.dayTimetable)) {
         const openedHours = getOpenedHours(safeplace.dayTimetable[day], safeplace.type);
 
+        if (!openedHours)
+            return false;
         if (openedHours === '') {
             return false;
         } else {
