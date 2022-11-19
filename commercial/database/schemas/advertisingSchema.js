@@ -24,6 +24,10 @@ const advertisingSchema = new Schema({
   targetType: {
     type: [String],
     required: true
+  },
+  radius: {
+    type: Number,
+    required: false
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 
