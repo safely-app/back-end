@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
