@@ -13,7 +13,7 @@ AdvertisingController.get('/', needToBeAdmin , async (req, res) => {
         targets.forEach((target) => {
 
             let PickedAdvertising = _.pick(target, [
-                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType', 'radius']);
             PickedAdvertising.targets = target.targets;
             advertisingsMap.push(PickedAdvertising);
         });
@@ -26,7 +26,7 @@ AdvertisingController.get('/:id', AdvertisingUserCheck, async (req, res) => {
 
     if (advertising) {
         const PickedAdvertising = _.pick(advertising, [
-            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType', 'radius']);
 
         res.send(PickedAdvertising);
     } else
@@ -38,7 +38,7 @@ AdvertisingController.get('/owner/:id', AdvertisingOwnerCheck , async (req, res)
 
     if (advertising) {
         const PickedAdvertising = _.pick(advertising, [
-            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+            '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType', 'radius']);
 
         res.send(PickedAdvertising);
     } else
@@ -57,7 +57,7 @@ AdvertisingController.get('/campaign/:id', AdvertisingCampaignCheck , async (req
 
         for (const advertising of advertisings) {
             const PickedAdvertising = _.pick(advertising, [
-                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']);
+                '_id', 'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType', 'radius']);
 
             advertisingsMap.push({
                 ...PickedAdvertising,
@@ -92,7 +92,7 @@ AdvertisingController.post('/', needToBeLogin, async (req, res) => {
     if (error)
       return res.status(400).json({ error: error.details[0].message});
     let advertising = new Advertising(_.pick(req.body, [
-        'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType']));
+        'ownerId', 'campaignId', 'title','description', 'imageUrl', 'targetType', 'radius']));
     await advertising.save();
     res.status(201).send(advertising);
 });

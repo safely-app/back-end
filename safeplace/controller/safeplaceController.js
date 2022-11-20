@@ -8,7 +8,7 @@ import { Light } from "../database/models";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
-import {cutAfterRadius, createOpenStreetMapSafeplace} from "../store/utils";
+import {cutAfterRadius, createOpenStreetMapSafeplace, isOpen } from "../store/utils";
 import {requestAuth, AdminOnly} from "../store/middleware";
 import axios from "axios";
 import {config} from "../store/config";
@@ -157,7 +157,8 @@ SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
     return res.status(400).json({ error: error.details[0].message});
   }
 
-  const safeplaces = await Safeplace.find();
+  let safeplaces = await Safeplace.find();
+  safeplaces = safeplaces.filter(safeplace => isOpen(safeplace));
   const coordinates = safeplaces.map((a) => {
     return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
   });
