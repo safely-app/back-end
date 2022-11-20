@@ -311,11 +311,11 @@ SafeplaceController.get("/stats/:city", async (req, res) => {
   if (req.params.city === 'Mulhouse')
     lightNumber = await Light.countDocuments();
 
-  const BusyScheduleNumber = await BusySchedule.countDocuments({city: req.params.city});
-  const SafeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
+  const busyScheduleNumber = await BusySchedule.countDocuments({city: req.params.city});
+  const safeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
   return res.status(200).json({
     "LightNumber": lightNumber,
-    "BusyScheduleNumber": BusyScheduleNumber,
-    "SafeplaceNumber": SafeplaceNumber
+    "BusyScheduleNumber": busyScheduleNumber,
+    "SafeplaceNumber": safeplaceNumber
   });
 })
