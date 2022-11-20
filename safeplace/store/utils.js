@@ -474,6 +474,8 @@ export function getNumberOfObjectsInRectangle(objects, rectangle, type) {
                 numberOfObjects++;
             else if (type === "busyArea" && isBusy(object))
                 numberOfObjects++;
+            else if (type === "light")
+                numberOfObjects++;
         }
     return numberOfObjects;
 }
