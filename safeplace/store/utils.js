@@ -89,6 +89,7 @@ export async function getMaxMetersOfTrajects(routes) {
 }
 
 export async function getAnomalies(res, req) {
+  //return [JSON.parse('{ "_id" : "6271d7595fd416761d286a86", "userId" : "6152cef3487da44a7de8ceb3", "comment" : "Rue non eclairee", "type" : "Dead End", "score" : 4, "street" : "Rue Schlumberger", "createdAt" : "2022-05-04T01:31:05.179Z", "updatedAt" : "2022-05-04T05:10:15.401Z"}')]
   const supportUrl = process.env.NODE_ENV === 'production' ? config.prod.supportUrl : config.dev.supportUrl;
   let anomalies = await fetch(supportUrl + "anomaly/validated", {method: 'GET', headers: {'Authorization': req.headers.authorization}})
 
@@ -105,11 +106,7 @@ export async function checkAnomalies(step, anomalies) {
   splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
   splitinstructions = await makeVerboseStreet(splitinstructions);
 
-  let obj = anomalies.find(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]+ /, "") === splitinstructions.toLowerCase());
-  if (obj)
-    return 1;
-  else
-    return 0;
+  return anomalies.filter(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]+ /, "") === splitinstructions.toLowerCase());
 }
 
 async function makeVerboseStreet(street) {
@@ -453,17 +450,46 @@ export function isOpen(safeplace) {
     return true;
 }
 
-export function getNumberOfObjectsInRectangle(objects, rectangle) {
+export function isBusy(busyArea) {
+  const date = new Date();
+  const hour = date.getHours();
+  let day = date.getDay();
+  const thursday = 4;
+
+  if (!busyArea.schedule.hasOwnProperty(day) || !busyArea.schedule[day].hasOwnProperty(hour)) {
+    if (busyArea.schedule.hasOwnProperty(thursday) && busyArea.schedule[thursday].hasOwnProperty(hour))
+      return busyArea.schedule[thursday][hour] > 10;
+    else
+      return false;
+  }
+  return busyArea.schedule[day][hour] > 10;
+}
+
+export function getNumberOfObjectsInRectangle(objects, rectangle, type) {
     let numberOfObjects = 0;
 
     for (const object of objects)
-        if (isPointInRectangle(object, rectangle))
-            if (isOpen(object))
+        if (isPointInRectangle(object, rectangle)) {
+            if (type === "safeplace" && isOpen(object))
                 numberOfObjects++;
-
+            else if (type === "busyArea" && isBusy(object))
+                numberOfObjects++;
+        }
     return numberOfObjects;
 }
 
 // ########################################################
 // ################### End Route calculation ##############
 // ########################################################
+
+export function getActualScore(actual, filteredAnomalies) {
+  let actualScore = actual.actualNumberOfLights + (actual.actualNumberOfSafeplaces * 5) + (actual.actualNumberOfBusyAreas * 7);
+
+  for (const anomaly of filteredAnomalies) {
+    if (anomaly.type === 'Dead End')
+      return 0;
+    else
+      actualScore -= 2;
+  }
+  return actualScore;
+}
