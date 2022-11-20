@@ -3,14 +3,16 @@ import https from 'https';
 import fs from 'fs';
 import pbf2json from 'pbf2json';
 import through from 'through2';
-import {Safeplace} from "../database/models/";
+import {Safeplace, BusySchedule} from "../database/models/";
+import { Light } from "../database/models";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
 import {cutAfterRadius, createOpenStreetMapSafeplace, isOpen } from "../store/utils";
-import {requestAuth} from "../store/middleware";
+import {requestAuth, AdminOnly} from "../store/middleware";
 import axios from "axios";
 import {config} from "../store/config";
+import { request } from 'http';
 
 export const SafeplaceController = express.Router();
 
@@ -296,4 +298,24 @@ SafeplaceController.put("/modifyHours/:safeplaceId", async (req, res) => {
     res.status(200).send('Updated');
   else
     res.status(400).json({message: "Could not update or safeplace not found"})
+})
+
+
+// ############################################################
+// ####################### City Data ##########################
+// ############################################################
+
+SafeplaceController.get("/stats/:city", async (req, res) => {
+  let lightNumber = [];
+
+  if (req.params.city === 'Mulhouse')
+    lightNumber = await Light.countDocuments();
+
+  const busyScheduleNumber = await BusySchedule.countDocuments({city: req.params.city});
+  const safeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
+  return res.status(200).json({
+    "LightNumber": lightNumber,
+    "BusyScheduleNumber": busyScheduleNumber,
+    "SafeplaceNumber": safeplaceNumber
+  });
 })
