@@ -416,12 +416,16 @@ function getComplexHours(time) {
 }
 
 function getOpenedHours(time, type) {
+    try {
     if (type === 'Market')
         return  getMarketHours(time);
     else if (time.includes(','))
         return getComplexHours(time);
     else
         return getSimpleHours(time);
+    } catch (error) {
+        return null;
+    }
 }
 
 export function isOpen(safeplace) {
