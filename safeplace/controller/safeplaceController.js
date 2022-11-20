@@ -3,7 +3,7 @@ import https from 'https';
 import fs from 'fs';
 import pbf2json from 'pbf2json';
 import through from 'through2';
-import {Safeplace} from "../database/models/";
+import {Safeplace, BusySchedule} from "../database/models/";
 import { Light } from "../database/models";
 import { orderByDistance } from "geolib";
 
@@ -305,10 +305,17 @@ SafeplaceController.put("/modifyHours/:safeplaceId", async (req, res) => {
 // ####################### City Data ##########################
 // ############################################################
 
-SafeplaceController.get("/stats/Mulhouse", requestAuth, AdminOnly, async (req, res) => {
-  Light.find({}, function(err, requests) {
-    var datas = {"Safeplace": 0, "Lights": 0};
-    datas.Lights = requests.length;
-    res.status(200).send(datas);
-});
+SafeplaceController.get("/stats/:city", async (req, res) => {
+  let lightNumber = [];
+
+  if (req.params.city === 'Mulhouse')
+    lightNumber = await Light.countDocuments();
+
+  const BusyScheduleNumber = await BusySchedule.countDocuments({city: req.params.city});
+  const SafeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
+  return res.status(200).json({
+    "LightNumber": lightNumber,
+    "BusyScheduleNumber": BusyScheduleNumber,
+    "SafeplaceNumber": SafeplaceNumber
+  });
 })
