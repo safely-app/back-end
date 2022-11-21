@@ -5,14 +5,11 @@ const busyScheduleSchema = new Schema({
     type: String,
   },
   schedule: {
-    type: [Object],
+    type: Object,
   },
   coordinate: {
     type: [String]
   },
-  web: {
-    type: String
-  }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 
 export default busyScheduleSchema;

@@ -1,8 +1,10 @@
 import express from "express";
 import fetch from 'node-fetch';
+import mongoose from "mongoose";
 import { validateTraject, validateOldTraject } from "../store/validation"
 import {requestAuth} from "../store/middleware";
-import { Safeplace } from "../database/models/";
+import { Safeplace, BusySchedule, Light } from "../database/models/";
+import { getActualScore } from "../store/utils";
 import {orderByDistance} from "geolib";
 import {
     calculateMetersWithCoordinates,
@@ -29,33 +31,50 @@ TrajectController.post('/', requestAuth, async (req, res) => {
 
     let numberOfSafeplaces = 0;
     let numberOfAnomalies = 0;
+    let numberOfLights = 0;
+    let numberOfBusyAreas = 0;
+
     let bestTraject = 0;
+    let oldScore = 0;
     const safeplaces = await Safeplace.find();
+    const busyAreas = await mongoose.connection.db.collection("busySchedule").find().toArray();
+    const lights = await Light.find();
     const anomalies = await getAnomalies(res, req);
+    const allFilteredAnomalies = [];
 
     for (let i = 0; req.body.routes[i]; i++) {
         let actualNumberOfSafeplaces = 0;
         let actualNumberOfAnomalies = 0;
+        let actualNumberOfBusyAreas = 0;
+        let actualNumberOfLights = 0;
         for (let step of req.body.routes[i].legs[0].steps) {
             const rectangle = getRouteRectangle(step.start_location, step.end_location);
             const rectangleExtremities = getRectangleExtremities(rectangle);
 
             const filteredSafeplaces = filterItemsInMaxCoordinates(safeplaces, rectangleExtremities);
-            // For frequency and lighting, just do as shown in the line above
-            actualNumberOfAnomalies += await checkAnomalies(step, anomalies);
+            const filteredBusyAreas = filterItemsInMaxCoordinates(busyAreas, rectangleExtremities);
+            const filteredLights = filterItemsInMaxCoordinates(lights, rectangleExtremities);
+            const filteredAnomalies = await checkAnomalies(step, anomalies);
+            allFilteredAnomalies.push(...filteredAnomalies);
 
-            actualNumberOfSafeplaces += getNumberOfObjectsInRectangle(filteredSafeplaces, rectangle);
-            // For frequency and lighting, just do as shown in the line above
+            actualNumberOfAnomalies += filteredAnomalies.length;
+            actualNumberOfSafeplaces += getNumberOfObjectsInRectangle(filteredSafeplaces, rectangle, "safeplace");
+            actualNumberOfBusyAreas += getNumberOfObjectsInRectangle(filteredBusyAreas, rectangle, "busyArea");
+            actualNumberOfLights += getNumberOfObjectsInRectangle(filteredLights, rectangle, "light");
         }
 
-        // For frequency and lighting, In this if we have the calculation, we can put it in another function when we have everything
-        if (actualNumberOfSafeplaces - (actualNumberOfAnomalies * 2) > numberOfSafeplaces - (numberOfAnomalies * 2)) {
+        const actual = {actualNumberOfSafeplaces, actualNumberOfAnomalies, actualNumberOfBusyAreas, actualNumberOfLights};
+        const actualScore = getActualScore(actual, allFilteredAnomalies);
+        if (actualScore > oldScore) {
             numberOfSafeplaces = actualNumberOfSafeplaces;
             numberOfAnomalies = actualNumberOfAnomalies;
+            numberOfBusyAreas = actualNumberOfBusyAreas;
+            numberOfLights = actualNumberOfLights;
             bestTraject = i;
+            oldScore = actualScore;
         }
     }
-    res.status(200).json({ index : bestTraject, numberOfSafeplaces: numberOfSafeplaces, numberOfAnomalies: numberOfAnomalies});
+    res.status(200).json({ index : bestTraject, numberOfSafeplaces: numberOfSafeplaces, numberOfAnomalies: numberOfAnomalies, numberOfBusyAreas: numberOfBusyAreas, numberOfLights: numberOfLights });
 })
 
 //########## OLD ROUTE ##########
