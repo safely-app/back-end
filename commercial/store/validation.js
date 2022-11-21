@@ -102,7 +102,8 @@ export function putValidateModif(campaign) {
     coordinate: Joi.array().items(Joi.string()) .min(2) .max(3),
     dayTimetable: Joi.array().items(Joi.string().allow(null)) .min(7) .max(7),
     grade: Joi.number() .min(1) .max(5),
-    type: Joi.string() .min(1) .max(50)
+    type: Joi.string() .min(1) .max(50),
+    ownerId: Joi.string() .length(24),
   })
   return schema.validate(campaign);
 }
@@ -117,7 +118,8 @@ export function validateModif(campaign) {
     coordinate: Joi.array().items(Joi.string()) .min(2) .max(3),
     dayTimetable: Joi.array().items(Joi.string().allow(null)) .min(7) .max(7),
     grade: Joi.number() .min(1) .max(5),
-    type: Joi.string() .min(1) .max(50)
+    type: Joi.string() .min(1) .max(50),
+    ownerId: Joi.string() .length(24),
   })
   return schema.validate(campaign);
 }
