@@ -11,7 +11,8 @@ import {
   SafeplaceCommentController,
   RequestClaimSafeplaceController,
   MailingController,
-  TrajectController
+  TrajectController,
+  LightController
 } from "./controller";
 import { fetchMarket } from "./store/utils";
 import { config } from "./store/config";
@@ -28,6 +29,7 @@ app.use("/requestClaimSafeplace", RequestClaimSafeplaceController);
 app.use("/comment", SafeplaceCommentController);
 app.use("/mailing", MailingController);
 app.use("/traject", TrajectController);
+app.use("/light", LightController);
 
 // setInterval(async () => {
 //   await fetchMarket();
