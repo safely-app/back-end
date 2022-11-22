@@ -114,7 +114,9 @@ SafeplaceController.put('/:id', requestAuth, async (req, res) => {
     type: req.body.type,
     email: req.body.email,
     phone: req.body.phone,
-    web: req.body.web
+    web: req.body.web,
+    adminComment: req.body.adminComment,
+    adminGrade: req.body.adminGrade,
   };
   
   console.log(doc);
