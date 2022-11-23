@@ -3,6 +3,7 @@ import https from 'https';
 import fs from 'fs';
 import pbf2json from 'pbf2json';
 import through from 'through2';
+import mongoose from 'mongoose';
 import {Safeplace, BusySchedule} from "../database/models/";
 import { Light } from "../database/models";
 import { orderByDistance } from "geolib";
@@ -313,7 +314,7 @@ SafeplaceController.get("/stats/:city", async (req, res) => {
   if (req.params.city === 'Mulhouse')
     lightNumber = await Light.countDocuments();
 
-  const busyScheduleNumber = await BusySchedule.countDocuments({city: req.params.city});
+  const busyScheduleNumber  = await (await mongoose.connection.db.collection("busySchedule").find().toArray()).length;
   const safeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
   return res.status(200).json({
     "LightNumber": lightNumber,
