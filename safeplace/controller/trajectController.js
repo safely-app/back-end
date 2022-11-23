@@ -36,11 +36,15 @@ TrajectController.post('/', requestAuth, async (req, res) => {
 
     let bestTraject = 0;
     let oldScore = 0;
+    let lights = await Light.find();
     const safeplaces = await Safeplace.find();
     const busyAreas = await mongoose.connection.db.collection("busySchedule").find().toArray();
-    const lights = await Light.find();
     const anomalies = await getAnomalies(res, req);
     const allFilteredAnomalies = [];
+
+    const date = new Date();
+    if (date.getHours() > 6 && date.getHours() < 18)
+        lights = [];
 
     for (let i = 0; req.body.routes[i]; i++) {
         let actualNumberOfSafeplaces = 0;
