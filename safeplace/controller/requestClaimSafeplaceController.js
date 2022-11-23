@@ -65,8 +65,7 @@ RequestClaimSafeplaceController.get('/ownerRequestClaim/:userId', requestAuth, a
             res.status(500).json({message: "No requests claim safeplace found for this owner"});
         }
     });
-[]})
-
+});
 
 RequestClaimSafeplaceController.put('/:id', RequestClaimSafeplaceUserCheck, requestAuth, AuthOrAdmin, async (req, res)=> {
     const user = req.authResponse;

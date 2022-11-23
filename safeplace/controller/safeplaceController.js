@@ -51,7 +51,7 @@ SafeplaceController.get('/ownerSafeplace/:ownerId', requestAuth, async (req, res
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const safeplace = await Safeplace.findOne({ ownerId: req.params.ownerId});
+  const safeplace = await Safeplace.find({ ownerId: req.params.ownerId});
 
   if (safeplace)
     res.status(200).json(safeplace);
