@@ -56,6 +56,18 @@ RequestClaimSafeplaceController.get('/:id', RequestClaimSafeplaceUserCheck, requ
         res.status(404).json({error: "Request / Claim safeplace not found"});
 });
 
+RequestClaimSafeplaceController.get('/ownerRequestClaim/:userId', requestAuth, async (req, res) => {
+    if (req.authResponse.role === 'empty')
+      return res.status(401).json({message: "Unauthorized"})
+  
+    const requestClaim = await RequestClaimSafeplace.findOne({ userId: req.params.userId});
+  
+    if (requestClaim)
+      res.status(200).json(requestClaim);
+    else
+      res.status(500).json({message: "No request claim safeplace found for this owner"});
+})
+
 
 RequestClaimSafeplaceController.put('/:id', RequestClaimSafeplaceUserCheck, requestAuth, AuthOrAdmin, async (req, res)=> {
     const user = req.authResponse;
