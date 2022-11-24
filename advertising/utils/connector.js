@@ -57,6 +57,10 @@ export const computeCost = async (event, campaign, authorization) => {
         return {error: "Event not authorized."};
 
 	let campaignInfo = await getCampaignTarget(campaign, authorization);	
+
+	if (campaignInfo && campaignInfo.targets.length < 1)
+		return {error: "No targets found for this campaign."};
+
 	let userInfo = await getuserTarget(authorization);
 	let FinalMatchingCost = 0;
 	let matchingCostObject = {ageRange: 0, csp: 0, total: 0}
