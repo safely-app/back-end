@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import logger from 'winston';
 import cors from 'cors';
@@ -11,7 +12,8 @@ import { config } from "./store/config";
 const app = express();
 
 app.use(cors());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: true, limit: '10mb'}));
+app.use(bodyParser.json({limit: '10mb'}));
 app.use(express.json());
 
 app.use("/target", MarketingTargetController);

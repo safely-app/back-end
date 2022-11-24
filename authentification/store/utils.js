@@ -230,7 +230,8 @@ export async function authResponder() {
           
           cb(null, {role: user.role, right:right, userId: user.id});
           return
-        } catch {
+        } catch(e) {
+          console.error(e)
           cb(null, {role: "empty", right:"false"});
           return
         }

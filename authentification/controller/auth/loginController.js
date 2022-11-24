@@ -28,7 +28,7 @@ LoginController.post('/login', async (req, res) => {
 
         return res.status(401).json( { error: 'Incorrect email or password.' });
     }
-    user['token'] = jwt.sign({ _id: user._id }, config.dev.privateKEY, {expiresIn: 60*60*2, algorithm: 'RS256'});
+    user['token'] = jwt.sign({ _id: user._id }, config.dev.privateKEY, {algorithm: 'RS256'});
 
     let returnValues = _.pick(user, ['_id', 'email', 'token']);
     returnValues.hashedId =  await CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user._id.toString()));

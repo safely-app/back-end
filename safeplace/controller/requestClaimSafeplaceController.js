@@ -41,13 +41,11 @@ RequestClaimSafeplaceController.post('/', requestAuth, async (req, res) => {
     }
 });
 
-
 RequestClaimSafeplaceController.get('/' , requestAuth, AuthOrAdmin, async (req, res) => {
     RequestClaimSafeplace.find({}, function(err, requests) {
         res.status(200).send(requests);
     });
 });
-
 
 RequestClaimSafeplaceController.get('/:id', RequestClaimSafeplaceUserCheck, requestAuth, AuthOrAdmin, async (req, res) => {
     if (req.middleware_values)
@@ -56,6 +54,18 @@ RequestClaimSafeplaceController.get('/:id', RequestClaimSafeplaceUserCheck, requ
         res.status(404).json({error: "Request / Claim safeplace not found"});
 });
 
+RequestClaimSafeplaceController.get('/ownerRequestClaim/:userId', requestAuth, async (req, res) => {
+    if (req.authResponse.role === 'empty')
+      return res.status(401).json({message: "Unauthorized"})
+  
+    RequestClaimSafeplace.find({ userId: req.params.userId}, function(err, requests) {
+        if (requests !== undefined) {
+            res.status(200).json(requests);
+        } else {
+            res.status(500).json({message: "No requests claim safeplace found for this owner"});
+        }
+    });
+});
 
 RequestClaimSafeplaceController.put('/:id', RequestClaimSafeplaceUserCheck, requestAuth, AuthOrAdmin, async (req, res)=> {
     const user = req.authResponse;

@@ -1,7 +1,7 @@
 import express from 'express';
 import _ from "lodash";
 import { Campaign, MarketingTarget } from '../database/models';
-import { CampaignUserCheck, needToBeAdmin, needToBeLogin, UserCheckOwnerOrAdmin } from '../store/middleware';
+import { CampaignUserCheck, needToBeAdmin, needToBeLogin, UserCheckOwnerOrAdmin, SafeplaceUserCheck } from '../store/middleware';
 import { validateCampaign, putValidateCampaign } from '../store/validation';
 import cote from "cote";
 import {config} from "../store/config";
@@ -44,7 +44,7 @@ CampaignController.get('/owner/:id', UserCheckOwnerOrAdmin , async (req, res) =>
     });
 });
 
-CampaignController.get('/safeplace/:safeplaceId', UserCheckOwnerOrAdmin , async (req, res) => {
+CampaignController.get('/safeplace/:safeplaceId', SafeplaceUserCheck , async (req, res) => {
     Campaign.find({ safeplaceId: req.params.safeplaceId }, function(err, campaigns) {
         let campaignsMap = [];
 

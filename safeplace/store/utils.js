@@ -5,7 +5,6 @@ import { config } from "./config";
 import {Safeplace} from "../database/models";
 import fetch from 'node-fetch';
 import {orderByDistance} from "geolib";
-import {func} from "joi";
 
 export async function sendTimetableVerificationEmail(email, id) {
   const transporter = nodemailer.createTransport({
@@ -89,16 +88,25 @@ export async function getMaxMetersOfTrajects(routes) {
   return maxMeters;
 }
 
+export async function getAnomalies(res, req) {
+  //return [JSON.parse('{ "_id" : "6271d7595fd416761d286a86", "userId" : "6152cef3487da44a7de8ceb3", "comment" : "Rue non eclairee", "type" : "Dead End", "score" : 4, "street" : "Rue Schlumberger", "createdAt" : "2022-05-04T01:31:05.179Z", "updatedAt" : "2022-05-04T05:10:15.401Z"}')]
+  const supportUrl = process.env.NODE_ENV === 'production' ? config.prod.supportUrl : config.dev.supportUrl;
+  let anomalies = await fetch(supportUrl + "anomaly/validated", {method: 'GET', headers: {'Authorization': req.headers.authorization}})
+
+  if (anomalies.status === 401)
+    return res.status(401).json({message: "Unauthorized"});
+  else if (anomalies.status === 500)
+    return res.status(500).json({message: "Internal server error"});
+  else
+    return await anomalies.json();
+}
+
 export async function checkAnomalies(step, anomalies) {
   let splitinstructions = step.html_instructions.split("<b>");
   splitinstructions = splitinstructions[splitinstructions.length - 1].split("</b>")[0];
   splitinstructions = await makeVerboseStreet(splitinstructions);
 
-  let obj = anomalies.find(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]* /, "") === splitinstructions.toLowerCase());
-  if (obj)
-    return 1;
-  else
-    return 0;
+  return anomalies.filter(o => o.street.split(",")[0].toLowerCase().replace(/[0-9]+ /, "") === splitinstructions.toLowerCase());
 }
 
 async function makeVerboseStreet(street) {
@@ -259,9 +267,9 @@ async function updateOrCreateSafeplace(payload, type)
     let timetable = [];
 
     days.forEach((day, index) => {
-      if (item.fields.jour.search(day) >= 0)
-        timetable.push(item.fields.horaire);
-      else
+      if (item.fields.jour.search(day) >= 0) {
+          timetable.push(item.fields.horaire);
+      } else
         timetable.push(null);
     })
 
@@ -283,3 +291,207 @@ async function updateOrCreateSafeplace(payload, type)
 // ########################################################
 // ################### End Fetch Market ###################
 // ########################################################
+
+// ########################################################
+// ################### Route calculation ##################
+// ########################################################
+
+export function getRouteRectangle(firstPoint, secondPoint) {
+  let vector = getVector(firstPoint, secondPoint);
+  let nx = getNx(vector, 0.0005);
+  let ny = getNy(vector, nx);
+
+  let rectangleFirst = addVectors([firstPoint.lat, firstPoint.lng], [nx, ny]);
+  let rectangleSecond = addVectors([firstPoint.lat, firstPoint.lng], [-nx, -ny]);
+  let rectangleThird = addVectors([secondPoint.lat, secondPoint.lng], [nx, ny]);
+  let rectangleFourth = addVectors([secondPoint.lat, secondPoint.lng], [-nx, -ny]);
+
+  return {1: rectangleFirst, 2: rectangleSecond, 3: rectangleThird, 4: rectangleFourth};
+}
+
+export function getRectangleExtremities(rectangle) {
+  const rectangleValues = Object.values(rectangle);
+
+  const lowestLongitude = Math.min(...rectangleValues.map(point => point[0]));
+  const highestLongitude = Math.max(...rectangleValues.map(point => point[0]));
+  const lowestLatitude = Math.min(...rectangleValues.map(point => point[1]));
+  const highestLatitude = Math.max(...rectangleValues.map(point => point[1]));
+
+  return {lowestLongitude, highestLongitude, lowestLatitude, highestLatitude};
+}
+
+function getVector(firstPoint, secondPoint) {
+    return [secondPoint.lat - firstPoint.lat, secondPoint.lng - firstPoint.lng];
+}
+
+function getNx(vector, height) {
+  let vectorSquare = Math.pow(vector[0] / vector[1], 2);
+  return height / Math.sqrt(1 + vectorSquare);
+}
+
+function getNy(vector, nx) {
+  const ny = (vector[0] / vector[1]) * nx;
+  return ny * -1;
+}
+
+function addVectors(firstVector, secondVector) {
+  return [firstVector[0] + secondVector[0], firstVector[1] + secondVector[1]];
+}
+
+function substractVectors(firstVector, secondVector) {
+  return [firstVector[0] - secondVector[0], firstVector[1] - secondVector[1]];
+}
+
+function dot(firstVector, secondVector) {
+  return firstVector[0] * secondVector[0] + firstVector[1] * secondVector[1];
+}
+
+export function filterItemsInMaxCoordinates(items, rectangleExtremities) {
+  return items.filter(item => {
+    return parseFloat(item.coordinate[0]) > rectangleExtremities.lowestLongitude &&
+        parseFloat(item.coordinate[0]) < rectangleExtremities.highestLongitude &&
+        parseFloat(item.coordinate[1]) > rectangleExtremities.lowestLatitude &&
+        parseFloat(item.coordinate[1]) < rectangleExtremities.highestLatitude
+  });
+}
+
+function isPointInRectangle(point, rectangle) {
+  const pointCoordinates = [parseFloat(point.coordinate[0]), parseFloat(point.coordinate[1])];
+
+  const vector1 = substractVectors(rectangle[1], rectangle[2]);
+  const vector2 = substractVectors(rectangle[1], rectangle[3]);
+  const vector3 = substractVectors(rectangle[1], pointCoordinates);
+
+  const dotFirst = dot(vector3, vector1);
+  const dotSecond = dot(vector1, vector1);
+  const dotThird = dot(vector3, vector2);
+  const dotFourth = dot(vector2, vector2);
+
+  return 0 <= dotFirst && dotFirst <= dotSecond && 0 <= dotThird && dotThird <= dotFourth
+}
+
+function hasHours(timetable) {
+    return timetable.filter(hours => hours !== '').length > 0;
+}
+
+function getMarketHours(time) {
+    try {
+    const regex = /(\d+)h(\d+)* à (\d+)h(\d+)*/;
+    const matches = time.match(regex);
+    const start = matches[2] ? parseInt(matches[1]) * 60 + parseInt(matches[2]) : parseInt(matches[1]) * 60;
+    const end = matches[4] ?  parseInt(matches[3]) * 60 + parseInt(matches[4]) :  parseInt(matches[3]) * 60;
+    return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getSimpleHours(time) {
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        return { start1: start , end1: end };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getComplexHours(time) {
+    try {
+        const regex = /(\d+):(\d+)-(\d+):(\d+), (\d+):(\d+)-(\d+):(\d+)/;
+        const matches = time.match(regex);
+        const start1 = parseInt(matches[1]) * 60 + parseInt(matches[2]);
+        const end1 = parseInt(matches[3]) * 60 + parseInt(matches[4]);
+        const start2 = parseInt(matches[5]) * 60 + parseInt(matches[6]);
+        const end2 = parseInt(matches[7]) * 60 + parseInt(matches[8]);
+        return { start1, end1, start2, end2 };
+    } catch (error) {
+        return null;
+    }
+}
+
+function getOpenedHours(time, type) {
+    try {
+    if (type === 'Market')
+        return  getMarketHours(time);
+    else if (time.includes(','))
+        return getComplexHours(time);
+    else
+        return getSimpleHours(time);
+    } catch (error) {
+        return null;
+    }
+}
+
+export function isOpen(safeplace) {
+    const date = new Date();
+    const time = date.getMinutes() + date.getHours() * 60;
+    let day = date.getDay() - 1;
+
+    if (day < 0)
+        day = 6;
+
+    if (hasHours(safeplace.dayTimetable)) {
+        const openedHours = getOpenedHours(safeplace.dayTimetable[day], safeplace.type);
+
+        if (!openedHours)
+            return false;
+        if (openedHours === '') {
+            return false;
+        } else {
+            if (openedHours.start2 && openedHours.end2)
+                return (time >= openedHours.start1 && time <= openedHours.end1) || (time >= openedHours.start2 && time <= openedHours.end2);
+            else
+                return time >= openedHours.start1 && time <= openedHours.end1;
+        }
+    }
+    return true;
+}
+
+export function isBusy(busyArea) {
+  const date = new Date();
+  const hour = date.getHours();
+  let day = date.getDay();
+  const thursday = 4;
+
+  if (!busyArea.schedule.hasOwnProperty(day) || !busyArea.schedule[day].hasOwnProperty(hour)) {
+    if (busyArea.schedule.hasOwnProperty(thursday) && busyArea.schedule[thursday].hasOwnProperty(hour))
+      return busyArea.schedule[thursday][hour] > 10;
+    else
+      return false;
+  }
+  return busyArea.schedule[day][hour] > 10;
+}
+
+export function getNumberOfObjectsInRectangle(objects, rectangle, type) {
+    let numberOfObjects = 0;
+
+    for (const object of objects)
+        if (isPointInRectangle(object, rectangle)) {
+            if (type === "safeplace" && isOpen(object))
+                numberOfObjects++;
+            else if (type === "busyArea" && isBusy(object))
+                numberOfObjects++;
+            else if (type === "light")
+                numberOfObjects++;
+        }
+    return numberOfObjects;
+}
+
+// ########################################################
+// ################### End Route calculation ##############
+// ########################################################
+
+export function getActualScore(actual, filteredAnomalies) {
+  let actualScore = actual.actualNumberOfLights + (actual.actualNumberOfSafeplaces * 5) + (actual.actualNumberOfBusyAreas * 7);
+
+  for (const anomaly of filteredAnomalies) {
+    if (anomaly.type === 'Dead End')
+      return 0;
+    else
+      actualScore -= 2;
+  }
+  return actualScore;
+}

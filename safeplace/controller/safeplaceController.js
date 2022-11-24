@@ -3,14 +3,17 @@ import https from 'https';
 import fs from 'fs';
 import pbf2json from 'pbf2json';
 import through from 'through2';
-import {Safeplace} from "../database/models/";
+import mongoose from 'mongoose';
+import {Safeplace, BusySchedule} from "../database/models/";
+import { Light } from "../database/models";
 import { orderByDistance } from "geolib";
 
 import {validateNearest, validateSafeplaceCreation, validateSafeplaceUpdateHours} from "../store/validation";
-import {cutAfterRadius, createOpenStreetMapSafeplace} from "../store/utils";
-import {requestAuth} from "../store/middleware";
+import {cutAfterRadius, createOpenStreetMapSafeplace, isOpen } from "../store/utils";
+import {requestAuth, AdminOnly} from "../store/middleware";
 import axios from "axios";
 import {config} from "../store/config";
+import { request } from 'http';
 
 export const SafeplaceController = express.Router();
 
@@ -48,7 +51,7 @@ SafeplaceController.get('/ownerSafeplace/:ownerId', requestAuth, async (req, res
   if (req.authResponse.role === 'empty')
     return res.status(401).json({message: "Unauthorized"})
 
-  const safeplace = await Safeplace.findOne({ ownerId: req.params.ownerId});
+  const safeplace = await Safeplace.find({ ownerId: req.params.ownerId});
 
   if (safeplace)
     res.status(200).json(safeplace);
@@ -112,7 +115,9 @@ SafeplaceController.put('/:id', requestAuth, async (req, res) => {
     type: req.body.type,
     email: req.body.email,
     phone: req.body.phone,
-    web: req.body.web
+    web: req.body.web,
+    adminComment: req.body.adminComment,
+    adminGrade: req.body.adminGrade,
   };
   
   console.log(doc);
@@ -155,7 +160,8 @@ SafeplaceController.post('/nearest', requestAuth, async (req, res) => {
     return res.status(400).json({ error: error.details[0].message});
   }
 
-  const safeplaces = await Safeplace.find();
+  let safeplaces = await Safeplace.find();
+  safeplaces = safeplaces.filter(safeplace => isOpen(safeplace));
   const coordinates = safeplaces.map((a) => {
     return {latitude: a.coordinate[0], longitude: a.coordinate[1]};
   });
@@ -295,4 +301,24 @@ SafeplaceController.put("/modifyHours/:safeplaceId", async (req, res) => {
     res.status(200).send('Updated');
   else
     res.status(400).json({message: "Could not update or safeplace not found"})
+})
+
+
+// ############################################################
+// ####################### City Data ##########################
+// ############################################################
+
+SafeplaceController.get("/stats/:city", async (req, res) => {
+  let lightNumber = [];
+
+  if (req.params.city === 'Mulhouse')
+    lightNumber = await Light.countDocuments();
+
+  const busyScheduleNumber  = await (await mongoose.connection.db.collection("busySchedule").find().toArray()).length;
+  const safeplaceNumber = await Safeplace.countDocuments({city: req.params.city});
+  return res.status(200).json({
+    "LightNumber": lightNumber,
+    "BusyScheduleNumber": busyScheduleNumber,
+    "SafeplaceNumber": safeplaceNumber
+  });
 })

@@ -44,6 +44,12 @@ const safeplaceSchema = new Schema({
   },
   web: {
     type: String
+  },
+  adminComment: {
+    type: String
+  },
+  adminGrade: {
+    type: Number
   }
 }, { timestamps: {createdAt: 'createdAt', updatedAt: 'updatedAt'}});
 
