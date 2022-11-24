@@ -81,16 +81,19 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
     if (campaign) {
         const PickedCampaign = _.pick(campaign,
             ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
-    
-        let targetInfos = await new Promise((resolve, reject) => {
-            let targetInfos = [];
-            campaign.targets.forEach(async (item, index, array)=>{
-                let target = await MarketingTarget.findOne({ _id: item });
-                targetInfos.push({'ageRange': target.ageRange, 'csp': target.csp})
-                if (array.length === index + 1)
-                    resolve(targetInfos)
-            })
-        });
+		let targetInfos = [];
+
+		if (campaign.targets && campaign.targets.length > 1) {
+			targetInfos = await new Promise((resolve, reject) => {
+				let targetInfos = [];
+				campaign.targets.forEach(async (item, index, array)=>{
+					let target = await MarketingTarget.findOne({ _id: item });
+					targetInfos.push({'ageRange': target.ageRange, 'csp': target.csp})
+					if (array.length === index + 1)
+						resolve(targetInfos)
+				})
+			});
+		}
         const request = { type: 'users'}
         const users = await requester.send(request);
 
