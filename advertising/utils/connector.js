@@ -29,6 +29,7 @@ const getuserTarget = async (authorization) => {
         }
     };
     const route = `user/${decoded._id}`;
+	console.log(`getuserTarget: ${url}${route}`);
     const response = await fetch(`${url}${route}`, conf);
 	return await response.json();
 }
@@ -46,6 +47,7 @@ const getCampaignTarget = async (campaign, authorization) => {
         }
     };
     const route = `campaign/${campaign}`;
+	console.log(`getCampaingTarget: ${url}${route}`);
     const response = await fetch(`${url}${route}`, conf);
 	return await response.json();
 
@@ -56,12 +58,14 @@ export const computeCost = async (event, campaign, authorization) => {
 	if (!cost)
         return {error: "Event not authorized."};
 
-	let campaignInfo = await getCampaignTarget(campaign, authorization);	
+	let campaignInfo = await getCampaignTarget(campaign, authorization);
+	console.log("campaignInfo", campaignInfo);	
 
 	if (campaignInfo && campaignInfo.targets.length < 1)
 		return {error: "No targets found for this campaign."};
 
 	let userInfo = await getuserTarget(authorization);
+	console.log("userInfo", userInfo);	
 	let FinalMatchingCost = 0;
 	let matchingCostObject = {ageRange: 0, csp: 0, total: 0}
 	if (campaignInfo && campaignInfo.targets) {
