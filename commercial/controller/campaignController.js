@@ -83,7 +83,7 @@ CampaignController.get('/:id', CampaignUserCheck, async (req, res) => {
             ['_id', 'ownerId','name','budget', 'budgetSpent', 'status', 'startingDate', 'safeplaceId']);
 		let targetInfos = [];
 
-		if (campaign.targets && campaign.targets.length > 1) {
+		if (campaign.targets && campaign.targets.length > 0) {
 			targetInfos = await new Promise((resolve, reject) => {
 				let targetInfos = [];
 				campaign.targets.forEach(async (item, index, array)=>{
